@@ -30,7 +30,13 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173', // Vite default port
   'http://localhost:8080', // Common dev port
-  'https://sktch-labs.vercel.app'
+  'https://sktch-labs.vercel.app',
+  'https://sktchlabs.com',
+  'https://www.sktchlabs.com',
+  'https://api.sktchlabs.com',
+
+
+
 ];
 
 const corsOptions = {
