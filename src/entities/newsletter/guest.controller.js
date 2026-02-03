@@ -12,7 +12,30 @@ const guestSubscriber = catchAsync(async (req, res) => {
   });
 });
 
+const getAllGuests = catchAsync(async (req, res) => {
+  const result = await guestService.getAllGuestsFromDb(req.query);
+
+  sendResponse(res, {
+    statusCode: 200,
+    message: "Subscribers fetched successfully",
+    data: result.items,
+    meta: result.meta,
+  });
+});
+
+const deleteGuest = catchAsync(async (req, res) => {
+  const deleted = await guestService.deleteGuestFromDb(req.params.id);
+
+  sendResponse(res, {
+    statusCode: 200,
+    message: "Subscriber deleted successfully",
+    data: deleted,
+  });
+});
 
 export const guestController = {
-    guestSubscriber
+    guestSubscriber,
+    getAllGuests,
+    deleteGuest
+
 }
