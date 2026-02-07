@@ -19,6 +19,7 @@ import privacyAdminRoutes from '../../entities/privacy/privacy.admin.route.js';
 import staticPageRoutes from '../../entities/staticPage/staticPage.route.js';
 import staticPageAdminRoutes from '../../entities/staticPage/staticPage.admin.route.js';
 import { styleRoutes } from '../../entities/admin/content/style.router.js';
+import { stepRoutes } from '../../entities/admin/steps/step.route.js';
 
 const router = express.Router();
 
@@ -44,5 +45,7 @@ router.use('/v1/pages', staticPageRoutes);
 router.use('/v1/admin/pages', staticPageAdminRoutes);
 
 router.use('/v1/style', styleRoutes);
+
+router.use('/v1/step', stepRoutes)
 
 export default router;
