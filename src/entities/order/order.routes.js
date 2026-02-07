@@ -8,7 +8,8 @@ import {
   updateDeliveryStatus,
   uploadBook,
   refundOrder,
-  checkPaymentStatus
+  checkPaymentStatus,
+  deleteOrder
 } from './order.controller.js';
 import { multerUpload } from '../../core/middlewares/multer.js';
 
@@ -36,5 +37,6 @@ router.get('/user/:userId', getOrdersByUserId);
 router.get('/admin/all-orders', getAllOrdersPopulated);
 router.put('/upload-book', multerUpload([{ name: 'image' }]), uploadBook);
 router.get('/admin/dashboard-stats', getOrderStats);
+router.delete('/admin/:orderId', deleteOrder);
 
 export default router;

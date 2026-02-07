@@ -303,6 +303,52 @@ export const getOrdersByUserId = async (req, res) => {
   }
 };
 
+// Delete Order - Cannot delete if status is pending
+export const deleteOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    if (!orderId) {
+      return res.status(400).json({
+        success: false,
+        message: 'orderId is required'
+      });
+    }
+
+    // Find the order first
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Check if order status is pending - cannot delete pending orders
+    if (order.status === 'pending') {
+      return res.status(400).json({
+        success: false,
+        message:
+          'Cannot delete order with pending status. Please wait until the payment is processed or cancelled.'
+      });
+    }
+
+    // Delete the order
+    await Order.findByIdAndDelete(orderId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Order deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
 import fs from 'fs';
 
 /**
