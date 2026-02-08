@@ -239,3 +239,23 @@ export const getHeader = async (req, res) => {
     return generateResponse(res, 500, false, 'Failed to fetch header');
   }
 };
+
+/**
+ * Get distinct types
+ * GET /admin/content/types/list
+ */
+export const getDistinctTypes = async (req, res) => {
+  try {
+    const types = await Item.distinct('type');
+    return generateResponse(
+      res,
+      200,
+      true,
+      'Types fetched successfully',
+      types
+    );
+  } catch (error) {
+    console.error('Get Distinct Types Error:', error);
+    return generateResponse(res, 500, false, 'Failed to fetch types');
+  }
+};

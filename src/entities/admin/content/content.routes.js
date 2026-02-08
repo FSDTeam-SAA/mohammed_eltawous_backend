@@ -7,11 +7,15 @@ import {
   getItemById,
   updateItem,
   createOrUpdateHeader,
-  getHeader
+  getHeader,
+  getDistinctTypes
 } from './content.controller.js';
 import { multerUpload } from '../../../core/middlewares/multer.js';
 
 const router = express.Router();
+
+// Get all distinct types - must be before /:id route
+router.get('/types/list', getDistinctTypes);
 
 // Upload one image per item
 router.post(
