@@ -1,5 +1,5 @@
 import { TermCondition } from "./termCondition.model.js";
-import { AppError } from "../../utility/appError.js";
+import { AppError } from "../../utility/AppError.js";
 
 const normalize = (value) => String(value || "").trim();
 
