@@ -22,6 +22,7 @@ import { styleRoutes } from '../../entities/admin/content/style.router.js';
 import { stepRoutes } from '../../entities/admin/steps/step.route.js';
 import { returnPolicyRoutes } from '../../entities/returnPolicy/returnPolicy.route.js';
 import { termConditionRoutes } from '../../entities/termCondtion/termCondition.route.js';
+import uploadRoutes from '../../entities/upload/upload.routes.js';
 
 const router = express.Router();
 
@@ -51,6 +52,7 @@ router.use('/v1/style', styleRoutes);
 router.use('/v1/step', stepRoutes);
 
 router.use('/v1/policy', returnPolicyRoutes);
-router.use('/v1/terms', termConditionRoutes)
+router.use('/v1/terms', termConditionRoutes);
+router.use('/v1/upload', uploadRoutes);
 
 export default router;
