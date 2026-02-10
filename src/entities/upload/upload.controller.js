@@ -1,6 +1,6 @@
 import { cloudinaryUpload } from '../../lib/cloudinaryUpload.js';
-import sendResponse from '../../utility/sendResponse.js';
-import catchAsync from '../../utility/catchAsync.js';
+import { sendResponse } from '../../utility/sendResponse.js';
+import { catchAsync } from '../../utility/catchAsync.js';
 
 export const uploadMultipleImages = catchAsync(async (req, res) => {
   if (!req.files || req.files.length === 0) {
