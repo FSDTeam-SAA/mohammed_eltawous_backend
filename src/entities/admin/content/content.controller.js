@@ -14,8 +14,8 @@ import { generateResponse } from '../../../lib/responseFormate.js';
 export const createItem = async (req, res) => {
   try {
     let { title, subtitle, type, prompt, color } = req.body;
-    // Always store type in lowercase for consistency
-    if (type) type = type.toLowerCase();
+    // Always store type in lowercase and trimmed for consistency
+    if (type) type = type.trim().toLowerCase();
 
     // Check if image exists
     const file = req.files?.image?.[0];
@@ -78,7 +78,7 @@ export const getAllItems = async (req, res) => {
 
     // Build filter object
     const filter = {};
-    if (type) filter.type = type.toLowerCase();
+    if (type) filter.type = type.trim().toLowerCase();
 
     // Fetch items matching the filter
     const items = await Item.find(filter);
@@ -116,8 +116,8 @@ export const getItemById = async (req, res) => {
 export const updateItem = async (req, res) => {
   try {
     let { title, subtitle, type, color, prompt } = req.body;
-    // Always store type in lowercase for consistency
-    if (type) type = type.toLowerCase();
+    // Always store type in lowercase and trimmed for consistency
+    if (type) type = type.trim().toLowerCase();
 
     const updateData = { title, subtitle, type, color };
     if (prompt !== undefined) updateData.prompt = prompt;
