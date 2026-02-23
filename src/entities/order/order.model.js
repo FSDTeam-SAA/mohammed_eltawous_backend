@@ -36,7 +36,8 @@ const orderSchema = new mongoose.Schema(
     },
     refundAmount: { type: Number },
     refundReason: { type: String },
-    refundedAt: { type: Date }
+    refundedAt: { type: Date },
+    isActive: { type: Boolean, default: true }
   },
   { timestamps: true }
 );

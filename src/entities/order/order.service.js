@@ -209,9 +209,27 @@ export const updateOrderDeliveryStatus = async (
   return order;
 };
 
+/**
+ * Toggle the isActive status of an order (archive/unarchive)
+ */
+export const toggleOrderArchive = async (orderId, isActive) => {
+  const order = await Order.findByIdAndUpdate(
+    orderId,
+    { isActive },
+    { new: true }
+  );
+
+  if (!order) {
+    throw new Error('Order not found');
+  }
+
+  return order;
+};
+
 export const orderService = {
   createOrderInDb,
   markOrderAsPaid,
   updateOrderWithBook,
-  updateOrderDeliveryStatus
+  updateOrderDeliveryStatus,
+  toggleOrderArchive
 };

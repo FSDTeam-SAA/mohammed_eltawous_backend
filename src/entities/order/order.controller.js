@@ -725,3 +725,36 @@ export const exportOrders = async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to export orders' });
   }
 };
+
+/**
+ * Archive or unarchive an order (Admin)
+ */
+export const archiveOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { isActive } = req.body;
+
+    if (typeof isActive !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        message: 'isActive (boolean) is required in request body'
+      });
+    }
+
+    const updatedOrder = await orderService.toggleOrderArchive(
+      orderId,
+      isActive
+    );
+
+    res.status(200).json({
+      success: true,
+      message: `Order ${isActive ? 'unarchived' : 'archived'} successfully`,
+      data: updatedOrder
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};

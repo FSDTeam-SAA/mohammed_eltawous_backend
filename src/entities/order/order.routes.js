@@ -10,7 +10,8 @@ import {
   refundOrder,
   checkPaymentStatus,
   deleteOrder,
-  exportOrders
+  exportOrders,
+  archiveOrder
 } from './order.controller.js';
 import { multerUpload } from '../../core/middlewares/multer.js';
 
@@ -40,5 +41,6 @@ router.get('/admin/export-orders', exportOrders);
 router.put('/upload-book', multerUpload([{ name: 'image' }]), uploadBook);
 router.get('/admin/dashboard-stats', getOrderStats);
 router.delete('/admin/:orderId', deleteOrder);
+router.patch('/admin/archive/:orderId', archiveOrder);
 
 export default router;
