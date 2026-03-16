@@ -100,29 +100,36 @@ export const runWindTunnel = async (req, res, next) => {
   try {
     const { company, scenarios, strategicOptions, conversationHistory } = req.body;
     
-    const specificPrompt = 
-      "Test each strategic option against each scenario (the \"Wind Tunnel\").\\n" +
-      "Company: " + company.name + "\\n" +
-      "Scenarios: " + JSON.stringify(scenarios.map(s => s.name)) + "\\n" +
-      "Strategic options: " + JSON.stringify(strategicOptions) + "\\n\\n" +
-      "For each option × scenario combination:\\n" +
-      "- Rate: Excellent / Good / Moderate / Poor\\n" +
-      "- Give 2-sentence reasoning\\n\\n" +
-      "Also identify based on the wind tunnel testing:\\n" +
-      "- No-regret moves (work across ALL scenarios)\\n" +
-      "- Options to keep open (hedge bets)\\n" +
-      "- Decisions to defer (wait for more signals)\\n" +
-      "- Early warning dashboard per scenario (Signal, Metric, Trigger point)\\n\\n" +
-      "Return JSON exactly matching this format:\\n" +
-      "{ \"windTunnel\": [ [ { \"rating\": \"string\", \"reasoning\": \"string\" } ] ], \"robustMoves\": { \"noRegret\": [\"string\"], \"keepOpen\": [\"string\"], \"defer\": [\"string\"] }, \"earlyWarnings\": [ { \"scenario\": \"string\", \"signal\": \"string\", \"metric\": \"string\", \"trigger\": \"string\" } ] }";
+    const hasOptions = strategicOptions && strategicOptions.length > 0;
 
-    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.2, 3000);
+    const specificPrompt = 
+      "Test strategic options against scenarios (the \"Wind Tunnel\").\n" +
+      "Company: " + company.name + "\n" +
+      "Scenarios: " + JSON.stringify(scenarios.map(s => s.name)) + "\n" +
+      (hasOptions 
+        ? "Strategic options to test: " + JSON.stringify(strategicOptions) + "\n" 
+        : "TASK: You must first GENERATE 3 distinct, high-impact strategic options for this company based on their context and the 4 scenarios provided. Label them Option A, B, and C.\n") +
+      "\n" +
+      "For each option × scenario combination:\n" +
+      "- Rate: Excellent / Good / Moderate / Poor\n" +
+      "- Give 2-sentence reasoning\n\n" +
+      "Also identify based on the wind tunnel testing:\n" +
+      "- No-regret moves (work across ALL scenarios)\n" +
+      "- Options to keep open (hedge bets)\n" +
+      "- Decisions to defer (wait for more signals)\n" +
+      "- STRATEGIC CONCLUSION: A 3-sentence executive summary of which path is best and why.\n" +
+      "- RECOMMENDED OPTION: State which option is the winner.\n" +
+      "\n" +
+      "Return JSON exactly matching this format:\n" +
+      "{ " + (hasOptions ? "" : "\"generatedOptions\": [\"string\"], ") + "\"windTunnel\": [ [ { \"rating\": \"string\", \"reasoning\": \"string\" } ] ], \"robustMoves\": { \"noRegret\": [\"string\"], \"keepOpen\": [\"string\"], \"defer\": [\"string\"] }, \"strategicConclusion\": \"string\", \"recommendedOption\": \"string\" }";
+
+    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.2, 3500);
     res.status(200).json({ 
       success: true, 
       data: result,
       history: [
         ...(conversationHistory || []),
-        { role: 'user', content: "Run wind tunnel." },
+        { role: 'user', content: hasOptions ? "Run wind tunnel." : "Generate and test options." },
         { role: 'assistant', content: JSON.stringify(result) }
       ]
     });

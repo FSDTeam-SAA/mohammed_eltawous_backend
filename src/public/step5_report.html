@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 5: Executive Report | AlWasl Workshop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #e2e8f0;
+            --text-heading: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 4rem 2rem;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 800px; margin: 0 auto; }
+
+        .glass-report {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 4rem;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .report-header {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 2rem;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .report-header h1 { font-size: 2.5rem; color: var(--text-heading); margin-bottom: 0.5rem; }
+        .report-header p { color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; }
+
+        h2 { color: var(--text-heading); margin: 2rem 0 1rem 0; font-size: 1.5rem; }
+        h3 { color: var(--primary); margin: 1.5rem 0 0.75rem 0; font-size: 1.1rem; text-transform: uppercase; }
+
+        p { margin-bottom: 1.25rem; opacity: 0.9; }
+
+        ul { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+
+        .badge-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .badge-item {
+            background: rgba(255,255,255,0.05);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+        }
+
+        .badge-item strong { display: block; color: var(--primary); font-size: 0.8rem; }
+
+        .footer-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 4rem;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+
+        button:hover { transform: translateY(-2px); opacity: 0.9; }
+
+        @media print {
+            body { background: white; color: black; padding: 0; }
+            .glass-report { background: white; border: none; box-shadow: none; padding: 2rem; }
+            .footer-actions { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="glass-report">
+            <div class="report-header">
+                <p>Strategic Scenario Report</p>
+                <h1>AlWasl Capital 2030</h1>
+            </div>
+
+            <h2>Executive Summary</h2>
+            <p>This report synthesizes the outcomes of the scenario planning workshop for AlWasl Capital. We explored four distinct futures based on the intersection of <strong>Regulatory Openness</strong> and <strong>Oil Price Trajectory</strong>.</p>
+
+            <h3>The Focal Question</h3>
+            <p>"Should we build a retail digital wealth platform or double down on relationship banking?"</p>
+
+            <h2>Proposed Strategic Path</h2>
+            <p>Based on Wind Tunnel testing, <strong>Option B (Digitally Enhanced Relationship Model)</strong> emerged as the most robust strategy, performing well across 3 out of 4 scenarios.</p>
+
+            <div class="badge-grid">
+                <div class="badge-item">
+                    <strong>Primary Axis X</strong>
+                    Regulatory Environment
+                </div>
+                <div class="badge-item">
+                    <strong>Primary Axis Y</strong>
+                    Oil Price Trajectory
+                </div>
+            </div>
+
+            <h2>Key Recommendations</h2>
+            <ul>
+                <li><strong>No-Regret Move:</strong> Immediately upgrade the client portal and digital reporting capability.</li>
+                <li><strong>Hedge Move:</strong> Maintain a small internal digital product team to preserve the option for a full build.</li>
+                <li><strong>Deferred Decision:</strong> Postpone the full retail platform build until 2+ Digital Souk signposts are confirmed.</li>
+            </ul>
+
+            <h2>Monitoring the Horizon</h2>
+            <p>We have identified 5 critical signposts to monitor monthly. If Brent crude sustains above $95/barrel, we should accelerate the HNW advisor expansion.</p>
+        </div>
+
+        <div class="footer-actions">
+            <button class="btn-outline" onclick="window.print()">Download PDF</button>
+            <button class="btn-primary" onclick="alert('Sent to all stakeholders.')">Share with Leadership</button>
+        </div>
+    </div>
+</body>
+</html>

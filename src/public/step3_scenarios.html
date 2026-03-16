@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 3: Scenario Stories | AlWasl Workshop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(99, 102, 241, 0.05) 0px, transparent 50%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 3rem; }
+        h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .subtitle { color: var(--text-muted); }
+
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+        }
+
+        .scenario-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .scenario-card:hover { 
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .badge {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            align-self: flex-start;
+        }
+
+        h2 { font-size: 1.75rem; color: #fff; }
+        
+        .story-text {
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .signposts {
+            background: rgba(15, 23, 42, 0.4);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .signpost-item {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .signpost-item::before { content: '→'; color: var(--primary); }
+
+        .nav-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 3rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Step 3: The Four Futures</h1>
+            <p class="subtitle">Detailed narratives of how the world could look in 2030.</p>
+        </header>
+
+        <div class="scenarios-grid">
+            <!-- Scenario 1 -->
+            <div class="scenario-card">
+                <div class="badge">A1 + B1</div>
+                <h2>The Velvet Cage</h2>
+                <div>
+                    <div class="section-title">The World Story</div>
+                    <p class="story-text">By 2030, the UAE finds itself in a peculiar position. Oil revenues have declined, forcing aggressive diversification. Yet regulators remain deeply conservative, viewing global fintech failures as validation of their cautious approach. Local markets feel trapped: clients want digital, but regulations make it unviable.</p>
+                </div>
+                <div class="signposts">
+                    <div class="section-title">Early Warning Signposts</div>
+                    <div class="signpost-item">CBUAE issues licensing framework with AED 500M capital requirement.</div>
+                    <div class="signpost-item">Oil prices stay below $65 for three consecutive years.</div>
+                </div>
+            </div>
+
+            <!-- Scenario 2 -->
+            <div class="scenario-card">
+                <div class="badge">A1 + B2</div>
+                <h2>The Gilded Souk</h2>
+                <div>
+                    <div class="section-title">The World Story</div>
+                    <p class="story-text">The 2020s close with oil at $110/barrel. UAE wealth swells, and a new generation of oil-services entrepreneurs creates a booming upper-middle class. Regulators stay traditional because the old model "just works." Relationships still determine access to the best deals.</p>
+                </div>
+                <div class="signposts">
+                    <div class="section-title">Early Warning Signposts</div>
+                    <div class="signpost-item">Brent crude sustains above $95/barrel for 18 months.</div>
+                    <div class="signpost-item">HNW client surveys rank "personal relationship" as top priority.</div>
+                </div>
+            </div>
+
+             <!-- Scenario 3 -->
+             <div class="scenario-card">
+                <div class="badge">A2 + B1</div>
+                <h2>The Digital Majlis</h2>
+                <div>
+                    <div class="section-title">The World Story</div>
+                    <p class="story-text">A dramatic regulatory pivot occurs. With oil under pressure, the UAE embraces financial services as a pillar. Digital wealth licenses are fast-tracked. This triggers a Cambrian explosion of international platforms like Revolut and eToro entering the market.</p>
+                </div>
+                <div class="signposts">
+                    <div class="section-title">Early Warning Signposts</div>
+                    <div class="signpost-item">Streamlined licensing with 90-day approval timelines announced.</div>
+                    <div class="signpost-item">Three international digital platforms receive licenses within 12 months.</div>
+                </div>
+            </div>
+
+            <!-- Scenario 4 -->
+            <div class="scenario-card">
+                <div class="badge">A2 + B2</div>
+                <h2>The Golden Gateway</h2>
+                <div>
+                    <div class="section-title">The World Story</div>
+                    <p class="story-text">The UAE dream scenario. Oil is high, and Singapore-style reforms make the UAE the "Wealth Hub of the East." Both HNW and mass-affluent classes explode. Winners are those who integrate high-touch service with a premium digital core.</p>
+                </div>
+                <div class="signposts">
+                    <div class="section-title">Early Warning Signposts</div>
+                    <div class="signpost-item">UAE mass-affluent segment grows by 20% annually.</div>
+                    <div class="signpost-item">AlWasl digital waitlist exceeds 5,000 clients in 6 months.</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="nav-btn" onclick="alert('Proceeding to Step 4...')">Wind Tunnel Stress Test →</button>
+    </div>
+</body>
+</html>

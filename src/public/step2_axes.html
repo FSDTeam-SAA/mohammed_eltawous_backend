@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step 2: Select Axes | AlWasl Workshop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container { max-width: 1000px; width: 100%; }
+        h1 { margin-bottom: 0.5rem; font-weight: 700; }
+        .subtitle { color: var(--text-muted); margin-bottom: 2rem; }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .selection-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .uncertainty-chip {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .uncertainty-chip:hover { border-color: var(--primary); }
+        .uncertainty-chip.selected { 
+            border-color: var(--primary); 
+            background: rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .selected .checkbox { background: var(--primary); border-color: var(--primary); }
+        .selected .checkbox::after { content: '✓'; color: white; font-size: 14px; }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:disabled { opacity: 0.5; }
+
+        .matrix-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 3rem;
+            position: relative;
+            padding: 2rem;
+        }
+
+        .matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            width: 500px;
+            height: 500px;
+            position: relative;
+        }
+
+        /* Axis Lines */
+        .matrix::before { /* Horizontal Axis */
+            content: '';
+            position: absolute;
+            top: 50%; left: -20px; right: -20px;
+            height: 2px;
+            background: var(--text-muted);
+            opacity: 0.3;
+        }
+        .matrix::after { /* Vertical Axis */
+            content: '';
+            position: absolute;
+            left: 50%; top: -20px; bottom: -20px;
+            width: 2px;
+            background: var(--text-muted);
+            opacity: 0.3;
+        }
+
+        .quadrant {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .axis-label {
+            position: absolute;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .label-top { top: -40px; }
+        .label-bottom { bottom: -40px; }
+        .label-left { left: -100px; transform: rotate(-90deg); top: 50%; }
+        .label-right { right: -100px; transform: rotate(90deg); top: 50%; }
+
+        .pole-text {
+            position: absolute;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            max-width: 150px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Step 2: Select Scenario Axes</h1>
+        <p class="subtitle">Choose the two uncertainties that will define your futures.</p>
+
+        <section class="glass-card">
+            <label style="display: block; margin-bottom: 1rem; font-size: 0.8rem; color: var(--text-muted);">SELECT EXACTLY 2 CRITICAL UNCERTAINTIES</label>
+            <div class="selection-area" id="list">
+                <!-- Example data from Step 1 -->
+                <div class="uncertainty-chip selected" onclick="toggleSelection(this, 'Regulatory Environment')">
+                    <div class="checkbox"></div>
+                    <span>CBUAE Regulatory Openness (Open vs. Closed)</span>
+                </div>
+                <div class="uncertainty-chip selected" onclick="toggleSelection(this, 'Oil Prices')">
+                    <div class="checkbox"></div>
+                    <span>Oil Price Trajectory (Sustained High vs. Sustained Low)</span>
+                </div>
+                <div class="uncertainty-chip" onclick="toggleSelection(this, 'Client Trust')">
+                    <div class="checkbox"></div>
+                    <span>Mass-Affluent Client Trust (Digital-First vs. Relationship-First)</span>
+                </div>
+                <div class="uncertainty-chip" onclick="toggleSelection(this, 'Competition')">
+                    <div class="checkbox"></div>
+                    <span>Global Fintech Competition (Aggressive Entry vs. Retrenchment)</span>
+                </div>
+            </div>
+            
+            <button id="generateBtn" onclick="generateAxes()">Generate Scenario Matrix</button>
+        </section>
+
+        <section class="matrix-container" id="matrixView">
+            <div class="matrix">
+                <div class="quadrant">Scenario 1<br>(A1 + B1)</div>
+                <div class="quadrant">Scenario 2<br>(A1 + B2)</div>
+                <div class="quadrant">Scenario 3<br>(A2 + B1)</div>
+                <div class="quadrant">Scenario 4<br>(A2 + B2)</div>
+
+                <!-- Labels -->
+                <div class="axis-label label-top" id="axisBLabel">Oil Price Trajectory</div>
+                <div class="axis-label label-left" id="axisALabel">Regulatory Environment</div>
+                
+                <div class="pole-text" style="top: 50%; left: -180px; transform: translateY(-50%);" id="poleA1">Closed / Fragmented</div>
+                <div class="pole-text" style="top: 50%; right: -180px; transform: translateY(-50%);" id="poleA2">Open / Enabling</div>
+                <div class="pole-text" style="top: -70px; left: 50%; transform: translateX(-50%);" id="poleB1">Sustained High</div>
+                <div class="pole-text" style="bottom: -70px; left: 50%; transform: translateX(-50%);" id="poleB2">Sustained Low</div>
+            </div>
+            
+            <button style="margin-top: 5rem; background: #10b981;" onclick="alert('Proceeding to Step 3...')">Build Scenario Stories →</button>
+        </section>
+    </div>
+
+    <script>
+        let selectedCount = 2;
+
+        function toggleSelection(el) {
+            if (!el.classList.contains('selected') && selectedCount >= 2) {
+                alert("Please select exactly 2 axes.");
+                return;
+            }
+            
+            el.classList.toggle('selected');
+            selectedCount = document.querySelectorAll('.selected').length;
+        }
+
+        async function generateAxes() {
+            const matrixView = document.getElementById('matrixView');
+            const btn = document.getElementById('generateBtn');
+            
+            btn.innerText = "Generating...";
+            btn.disabled = true;
+
+            // Mocking API call to /api/v1/workshop/axes
+            // In a real app, you would send the selected uncertainties to the backend.
+            setTimeout(() => {
+                matrixView.style.display = 'flex';
+                btn.innerText = "Regenerate Matrix";
+                btn.disabled = false;
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
