@@ -17,7 +17,6 @@ import notFound from './core/middlewares/notFound.js';
 import { globalLimiter } from './lib/limit.js';
 import appRouter from './core/app/appRouter.js';
 import { globalErrorHandler } from './core/middlewares/globalErrorHandler.js';
-import { initPaymentCheckCron } from './entities/order/paymentCheck.cron.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,15 +27,7 @@ const app = express();
 app.use(helmet());
 const allowedOrigins = [
   'http://localhost:3000',
-  'http://localhost:5173', // Vite default port
-  'http://localhost:8080', // Common dev port
-  'https://sktch-labs.vercel.app',
-  'https://sktchlabs.com',
-  'https://www.sktchlabs.com',
-  'https://api.sktchlabs.com',
-
-
-
+  'http://localhost:5000',
 ];
 
 const corsOptions = {
@@ -75,7 +66,9 @@ app.use(globalLimiter);
 
 // Set up static files middleware
 const uploadPath = path.resolve(__dirname, '../uploads');
+const publicPath = path.resolve(__dirname, 'public');
 app.use('/uploads', express.static(uploadPath));
+app.use(express.static(publicPath));
 
 // Set up API routes
 app.use('/api', appRouter);
@@ -89,6 +82,6 @@ app.use(globalErrorHandler);
 logger.info('Middleware stack initialized');
 
 // Initialize payment check cron job (runs every 5 seconds)
-initPaymentCheckCron();
+// initPaymentCheckCron();
 
 export { app };
