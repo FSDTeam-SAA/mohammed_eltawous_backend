@@ -44,8 +44,22 @@ export const selectAxes = async (req, res, next) => {
       "2. Genuine unpredictability.\\n" +
       "3. Independence (uncorrelated — if one moves, the other doesn't necessarily move with it).\\n\\n" +
       "For each axis define 2 polar end labels (extreme opposite outcomes).\\n" +
+      "Also, pre-generate 4 scenario names and 1-sentence summaries for the resulting matrix quadrants:\\n" +
+      "- topRight (poleA2 + poleB2)\\n" +
+      "- topLeft (poleA1 + poleB2)\\n" +
+      "- bottomLeft (poleA1 + poleB1)\\n" +
+      "- bottomRight (poleA2 + poleB1)\\n\\n" +
       "Return JSON exactly matching this format:\\n" +
-      "{ \"axisA\": { \"label\": \"string\", \"poleA1\": \"string\", \"poleA2\": \"string\", \"reason\": \"string\" }, \"axisB\": { \"label\": \"string\", \"poleB1\": \"string\", \"poleB2\": \"string\", \"reason\": \"string\" } }";
+      "{" +
+      "  \"axisA\": { \"label\": \"string\", \"poleA1\": \"string\", \"poleA2\": \"string\", \"reason\": \"string\" }," +
+      "  \"axisB\": { \"label\": \"string\", \"poleB1\": \"string\", \"poleB2\": \"string\", \"reason\": \"string\" }," +
+      "  \"scenarios\": {" +
+      "    \"topRight\": { \"name\": \"string\", \"summary\": \"string\" }," +
+      "    \"topLeft\": { \"name\": \"string\", \"summary\": \"string\" }," +
+      "    \"bottomLeft\": { \"name\": \"string\", \"summary\": \"string\" }," +
+      "    \"bottomRight\": { \"name\": \"string\", \"summary\": \"string\" }" +
+      "  }" +
+      "}";
 
     const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 1200);
     res.status(200).json({ 
@@ -72,6 +86,7 @@ export const buildScenarios = async (req, res, next) => {
       "Axis A: " + axes.axisA.label + " — poles: [" + axes.axisA.poleA1 + "] vs [" + axes.axisA.poleA2 + "]\\n" +
       "Axis B: " + axes.axisB.label + " — poles: [" + axes.axisB.poleB1 + "] vs [" + axes.axisB.poleB2 + "]\\n\\n" +
       "All driving forces for context: " + JSON.stringify(forces) + "\\n\\n" +
+      (req.body.existingScenarios ? "Use these pre-defined scenario names and summaries as your starting point: " + JSON.stringify(req.body.existingScenarios) + "\\n\\n" : "") +
       "For each of the 4 quadrant combinations (A1+B1, A1+B2, A2+B1, A2+B2):\\n" +
       "- Give the scenario a vivid memorable name\\n" +
       "- Write a 3-4 paragraph story of what the world looks like in " + company.horizonYear + " in this scenario\\n" +

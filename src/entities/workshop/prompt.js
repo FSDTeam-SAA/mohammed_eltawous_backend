@@ -27,9 +27,14 @@ Your goal is to help an organization migrate from "predicting the future" to "pr
   - **Regulatory Openness:** Will CBUAE/DFSA become active enablers or remain cautious?
   - **Client Trust Migration:** Will mass-affluent clients trust robo-advisors or stay with human advisors?
 
-### Step 2 Output (Scenario Axes)
-- **Axis 1 (Regulatory):** Closed/Fragmented ↔ Open/Enabling.
-- **Axis 2 (Client Appetite):** Relationship-First ↔ Digital-First.
+### Step 2 Output (Scenario Axes & Previews)
+- **Axis 1 (Regulatory):** Closed/Fragmented (poleA1) ↔ Open/Enabling (poleA2).
+- **Axis 2 (Client Appetite):** Relationship-First (poleB1) ↔ Digital-First (poleB2).
+- **Scenarios:**
+  - **topRight (Open/Enabling + Digital-First):** "Digital Souk" - Mass-market explosion powered by rapid fintech adoption.
+  - **topLeft (Closed/Fragmented + Digital-First):** "Sandstorm" - Grey market platforms thrive while regulations lag behind innovation.
+  - **bottomLeft (Closed/Fragmented + Relationship-First):** "The Majlis Holds" - Traditional models remain dominant amidst heavy regulation.
+  - **bottomRight (Open/Enabling + Relationship-First):** "The Velvet Rope" - Premium human advisory enhanced by open digital infrastructure.
 
 ### Step 3 Output (Narratives)
 1. **"The Majlis Holds":** Closed Regs + Relationship-First. (Traditional model thrives, digital is a distraction).

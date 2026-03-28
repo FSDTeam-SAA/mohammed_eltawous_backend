@@ -125,69 +125,92 @@
             <p class="subtitle">Detailed narratives of how the world could look in 2030.</p>
         </header>
 
-        <div class="scenarios-grid">
-            <!-- Scenario 1 -->
-            <div class="scenario-card">
-                <div class="badge">A1 + B1</div>
-                <h2>The Velvet Cage</h2>
-                <div>
-                    <div class="section-title">The World Story</div>
-                    <p class="story-text">By 2030, the UAE finds itself in a peculiar position. Oil revenues have declined, forcing aggressive diversification. Yet regulators remain deeply conservative, viewing global fintech failures as validation of their cautious approach. Local markets feel trapped: clients want digital, but regulations make it unviable.</p>
-                </div>
-                <div class="signposts">
-                    <div class="section-title">Early Warning Signposts</div>
-                    <div class="signpost-item">CBUAE issues licensing framework with AED 500M capital requirement.</div>
-                    <div class="signpost-item">Oil prices stay below $65 for three consecutive years.</div>
-                </div>
-            </div>
-
-            <!-- Scenario 2 -->
-            <div class="scenario-card">
-                <div class="badge">A1 + B2</div>
-                <h2>The Gilded Souk</h2>
-                <div>
-                    <div class="section-title">The World Story</div>
-                    <p class="story-text">The 2020s close with oil at $110/barrel. UAE wealth swells, and a new generation of oil-services entrepreneurs creates a booming upper-middle class. Regulators stay traditional because the old model "just works." Relationships still determine access to the best deals.</p>
-                </div>
-                <div class="signposts">
-                    <div class="section-title">Early Warning Signposts</div>
-                    <div class="signpost-item">Brent crude sustains above $95/barrel for 18 months.</div>
-                    <div class="signpost-item">HNW client surveys rank "personal relationship" as top priority.</div>
-                </div>
-            </div>
-
-             <!-- Scenario 3 -->
-             <div class="scenario-card">
-                <div class="badge">A2 + B1</div>
-                <h2>The Digital Majlis</h2>
-                <div>
-                    <div class="section-title">The World Story</div>
-                    <p class="story-text">A dramatic regulatory pivot occurs. With oil under pressure, the UAE embraces financial services as a pillar. Digital wealth licenses are fast-tracked. This triggers a Cambrian explosion of international platforms like Revolut and eToro entering the market.</p>
-                </div>
-                <div class="signposts">
-                    <div class="section-title">Early Warning Signposts</div>
-                    <div class="signpost-item">Streamlined licensing with 90-day approval timelines announced.</div>
-                    <div class="signpost-item">Three international digital platforms receive licenses within 12 months.</div>
-                </div>
-            </div>
-
-            <!-- Scenario 4 -->
-            <div class="scenario-card">
-                <div class="badge">A2 + B2</div>
-                <h2>The Golden Gateway</h2>
-                <div>
-                    <div class="section-title">The World Story</div>
-                    <p class="story-text">The UAE dream scenario. Oil is high, and Singapore-style reforms make the UAE the "Wealth Hub of the East." Both HNW and mass-affluent classes explode. Winners are those who integrate high-touch service with a premium digital core.</p>
-                </div>
-                <div class="signposts">
-                    <div class="section-title">Early Warning Signposts</div>
-                    <div class="signpost-item">UAE mass-affluent segment grows by 20% annually.</div>
-                    <div class="signpost-item">AlWasl digital waitlist exceeds 5,000 clients in 6 months.</div>
-                </div>
-            </div>
+        <div class="loader" id="loader" style="display: none; margin: 2rem auto; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite;"></div>
+        <div class="scenarios-grid" id="scenariosContainer">
+            <!-- Dynamic Content -->
         </div>
 
-        <button class="nav-btn" onclick="alert('Proceeding to Step 4...')">Wind Tunnel Stress Test →</button>
+        <button class="nav-btn" id="nextBtn" style="display: none;" onclick="proceedToStep4()">Wind Tunnel Stress Test →</button>
+        <button class="nav-btn" id="generateBtn" style="right: auto; left: 2rem;" onclick="generateScenarios()">Generate Detailed Stories</button>
+    </div>
+
+    <script>
+        const company = JSON.parse(localStorage.getItem('workshop_company') || '{}');
+        const axes = JSON.parse(localStorage.getItem('workshop_axes') || '{}');
+        const forces = JSON.parse(localStorage.getItem('workshop_forces') || '[]');
+        const history = JSON.parse(localStorage.getItem('workshop_history') || '[]');
+
+        async function generateScenarios() {
+            const container = document.getElementById('scenariosContainer');
+            const loader = document.getElementById('loader');
+            const genBtn = document.getElementById('generateBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            loader.style.display = 'block';
+            genBtn.disabled = true;
+            genBtn.innerText = "Generating Stories...";
+
+            try {
+                const response = await fetch('/api/v1/workshop/scenarios', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        company,
+                        axes,
+                        forces,
+                        existingScenarios: axes.scenarios, // Use preview names/summaries
+                        conversationHistory: history
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    localStorage.setItem('workshop_scenarios', JSON.stringify(result.data));
+                    localStorage.setItem('workshop_history', JSON.stringify(result.history));
+                    renderScenarios(result.data.scenarios);
+                    nextBtn.style.display = 'block';
+                    genBtn.innerText = "Regenerate Stories";
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                loader.style.display = 'none';
+                genBtn.disabled = false;
+            }
+        }
+
+        function renderScenarios(scenarios) {
+            const container = document.getElementById('scenariosContainer');
+            container.innerHTML = scenarios.map(s => `
+                <div class="scenario-card">
+                    <div class="badge">${s.combination}</div>
+                    <h2>${s.name}</h2>
+                    <div>
+                        <div class="section-title">The World Story</div>
+                        <p class="story-text">${s.story}</p>
+                    </div>
+                    <div>
+                        <div class="section-title">Strategic Implications</div>
+                        <p class="story-text">${s.implications}</p>
+                    </div>
+                    <div class="signposts">
+                        <div class="section-title">Early Warning Signposts</div>
+                        ${s.signposts.map(sp => `<div class="signpost-item">${sp}</div>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function proceedToStep4() {
+            window.location.href = 'step4_windtunnel.html';
+        }
+
+        // Auto-generate if not already generated?
+        // Or wait for user click. Let's wait for click as per Step 2.
+    </script>
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
     </div>
 </body>
 </html>

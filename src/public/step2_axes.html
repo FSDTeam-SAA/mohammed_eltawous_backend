@@ -211,7 +211,7 @@
                 <div class="pole-text" style="bottom: -70px; left: 50%; transform: translateX(-50%);" id="poleB2">Sustained Low</div>
             </div>
             
-            <button style="margin-top: 5rem; background: #10b981;" onclick="alert('Proceeding to Step 3...')">Build Scenario Stories →</button>
+            <button style="margin-top: 5rem; background: #10b981;" onclick="proceedToStep3()">Build Scenario Stories →</button>
         </section>
     </div>
 
@@ -228,21 +228,76 @@
             selectedCount = document.querySelectorAll('.selected').length;
         }
 
+        // Load data from previous step
+        const company = JSON.parse(localStorage.getItem('workshop_company') || '{}');
+        const classification = JSON.parse(localStorage.getItem('workshop_classification') || '{}');
+        const history = JSON.parse(localStorage.getItem('workshop_history') || '[]');
+
         async function generateAxes() {
             const matrixView = document.getElementById('matrixView');
             const btn = document.getElementById('generateBtn');
             
-            btn.innerText = "Generating...";
+            btn.innerText = "Generating Matrix...";
             btn.disabled = true;
 
-            // Mocking API call to /api/v1/workshop/axes
-            // In a real app, you would send the selected uncertainties to the backend.
-            setTimeout(() => {
-                matrixView.style.display = 'flex';
-                btn.innerText = "Regenerate Matrix";
+            try {
+                const response = await fetch('/api/v1/workshop/axes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        company,
+                        classification,
+                        conversationHistory: history
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    const data = result.data;
+                    
+                    // Store for next step
+                    localStorage.setItem('workshop_axes', JSON.stringify(data));
+                    localStorage.setItem('workshop_history', JSON.stringify(result.history));
+
+                    // Update Labels
+                    document.getElementById('axisALabel').innerText = data.axisA.label;
+                    document.getElementById('axisBLabel').innerText = data.axisB.label;
+                    document.getElementById('poleA1').innerText = data.axisA.poleA1;
+                    document.getElementById('poleA2').innerText = data.axisA.poleA2;
+                    document.getElementById('poleB1').innerText = data.axisB.poleB1;
+                    document.getElementById('poleB2').innerText = data.axisB.poleB2;
+
+                    // Update Quadrants with Scenario Previews
+                    const quadrants = document.querySelectorAll('.quadrant');
+                    
+                    // Mapping: A2+B2, A1+B2, A1+B1, A2+B1 (order based on HTML index if not specifically IDed)
+                    // Let's explicitly ID them in HTML for safety, but for now assuming order:
+                    // 1: topRight (A2+B2), 2: topLeft (A1+B2), 3: bottomLeft (A1+B1), 4: bottomRight (A2+B1)
+                    // Wait, the HTML has:
+                    // <div class="quadrant">Scenario 1<br>(A1 + B1)</div>
+                    // <div class="quadrant">Scenario 2<br>(A1 + B2)</div>
+                    // <div class="quadrant">Scenario 3<br>(A2 + B1)</div>
+                    // <div class="quadrant">Scenario 4<br>(A2 + B2)</div>
+                    
+                    const sc = data.scenarios;
+                    quadrants[0].innerHTML = `<div style="color:var(--primary); font-size:1.1rem; margin-bottom:0.5rem;">${sc.bottomLeft.name}</div><div style="font-size:0.75rem; font-weight:400; opacity:0.8;">${sc.bottomLeft.summary}</div>`;
+                    quadrants[1].innerHTML = `<div style="color:var(--primary); font-size:1.1rem; margin-bottom:0.5rem;">${sc.topLeft.name}</div><div style="font-size:0.75rem; font-weight:400; opacity:0.8;">${sc.topLeft.summary}</div>`;
+                    quadrants[2].innerHTML = `<div style="color:var(--primary); font-size:1.1rem; margin-bottom:0.5rem;">${sc.bottomRight.name}</div><div style="font-size:0.75rem; font-weight:400; opacity:0.8;">${sc.bottomRight.summary}</div>`;
+                    quadrants[3].innerHTML = `<div style="color:var(--primary); font-size:1.1rem; margin-bottom:0.5rem;">${sc.topRight.name}</div><div style="font-size:0.75rem; font-weight:400; opacity:0.8;">${sc.topRight.summary}</div>`;
+
+                    matrixView.style.display = 'flex';
+                    btn.innerText = "Regenerate Matrix";
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
                 btn.disabled = false;
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            }, 1000);
+            }
+        }
+
+        function proceedToStep3() {
+            window.location.href = 'step3_scenarios.html';
         }
     </script>
 </body>

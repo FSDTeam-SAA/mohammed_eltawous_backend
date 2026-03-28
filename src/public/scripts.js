@@ -147,6 +147,7 @@ document.getElementById('btn-3').onclick = async () => {
         company: state.company,
         axes: state.axes,
         forces: state.forces,
+        existingScenarios: state.axes.scenarios, // Use preview names/summaries
         conversationHistory: state.history
     });
     setLoading(3, false);
