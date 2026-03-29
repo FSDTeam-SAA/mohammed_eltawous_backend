@@ -12,7 +12,13 @@ const anthropic = new Anthropic({
   }
 });
 
-const DEFAULT_MODEL = 'claude-sonnet-4-5';
+const SONNET_MODEL = 'claude-sonnet-4-6';
+const HAIKU_MODEL = 'claude-haiku-4-5';
+
+export const MODELS = {
+  SONNET: SONNET_MODEL,
+  HAIKU: HAIKU_MODEL
+};
 
 /**
  * Robustly extracts JSON from a potentially messy string.
@@ -29,19 +35,29 @@ const extractJSON = (text) => {
   return text.substring(firstBrace, lastBrace + 1);
 };
 
-export const callClaudeJSON = async (messages, specificPrompt, temperature = 0.5, maxTokens = 4096) => {
+export const callClaudeJSON = async (messages, specificPrompt, temperature = 0.5, maxTokens = 4096, modelSelection = MODELS.SONNET) => {
   let rawText = '';
   try {
     const defaultMessages = messages && messages.length > 0 ? messages : [];
     const response = await anthropic.messages.create({
-      model: DEFAULT_MODEL,
+      model: modelSelection,
       max_tokens: maxTokens,
       temperature,
-      system: systemPrompt + "\n\n" + specificPrompt,
+      system: [
+        {
+          type: "text",
+          text: systemPrompt + "\n\n" + specificPrompt,
+          cache_control: { type: "ephemeral" }
+        }
+      ],
       messages: [
         ...defaultMessages,
-        { role: 'user', content: "Please execute step according to prompts. Output ONLY valid JSON." }
+        { role: 'user', content: "Return ONLY valid JSON." }
       ],
+    }, {
+      headers: {
+          "anthropic-beta": "prompt-caching-2024-07-31"
+      }
     });
 
     rawText = response.content[0].text.trim();
@@ -54,7 +70,7 @@ export const callClaudeJSON = async (messages, specificPrompt, temperature = 0.5
     // basic retry
     try {
       const responseRetry = await anthropic.messages.create({
-        model: DEFAULT_MODEL,
+        model: modelSelection,
         max_tokens: maxTokens,
         temperature: temperature,
         system: systemPrompt,

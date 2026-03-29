@@ -1,4 +1,4 @@
-import { callClaudeJSON } from './ai.service.js';
+import { callClaudeJSON, MODELS } from './ai.service.js';
 
 export const classifyForces = async (req, res, next) => {
   try {
@@ -15,7 +15,7 @@ export const classifyForces = async (req, res, next) => {
       "2. Critical uncertainties (high impact on the focal question but genuinely unpredictable outcome).\\n\\n" +
       "Return JSON exactly matching this format: { \"predetermined\": [], \"uncertainties\": [] }";
 
-    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 1500);
+    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 800, MODELS.HAIKU);
     res.status(200).json({ 
       success: true, 
       data: result,
@@ -61,7 +61,7 @@ export const selectAxes = async (req, res, next) => {
       "  }" +
       "}";
 
-    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 1200);
+    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 1000, MODELS.HAIKU);
     res.status(200).json({ 
       success: true, 
       data: result,
@@ -96,7 +96,7 @@ export const buildScenarios = async (req, res, next) => {
       "Return JSON exactly matching this format:\\n" +
       "{ \"scenarios\": [ { \"id\": 1, \"name\": \"string\", \"combination\": \"A1+B1\", \"story\": \"string\", \"implications\": \"string\", \"signposts\": [\"string\"] } ] }";
 
-    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.7, 4096);
+    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.7, 4096, MODELS.SONNET);
     res.status(200).json({ 
       success: true, 
       data: result,
@@ -138,7 +138,7 @@ export const runWindTunnel = async (req, res, next) => {
       "Return JSON exactly matching this format:\n" +
       "{ " + (hasOptions ? "" : "\"generatedOptions\": [\"string\"], ") + "\"windTunnel\": [ [ { \"rating\": \"string\", \"reasoning\": \"string\" } ] ], \"robustMoves\": { \"noRegret\": [\"string\"], \"keepOpen\": [\"string\"], \"defer\": [\"string\"] }, \"strategicConclusion\": \"string\", \"recommendedOption\": \"string\" }";
 
-    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.2, 3500);
+    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.2, 3500, MODELS.SONNET);
     res.status(200).json({ 
       success: true, 
       data: result,
@@ -173,7 +173,7 @@ export const generateReport = async (req, res, next) => {
       "Return JSON exactly matching this format:\\n" +
       "{ \"fullReportMarkdown\": \"string (the markdown content)\" }";
 
-    const result = await callClaudeJSON([], specificPrompt, 0.5, 8192);
+    const result = await callClaudeJSON([], specificPrompt, 0.5, 8192, MODELS.SONNET);
     res.status(200).json({ 
       success: true, 
       data: result
