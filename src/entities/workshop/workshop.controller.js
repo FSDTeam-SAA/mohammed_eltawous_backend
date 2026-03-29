@@ -3,8 +3,8 @@ import { callClaudeJSON, MODELS } from './ai.service.js';
 export const classifyForces = async (req, res, next) => {
   try {
     const { company, forces, conversationHistory } = req.body;
-    
-    const specificPrompt = 
+
+    const specificPrompt =
       "Detailed Company context: " + JSON.stringify(company) + "\\n\\n" +
       "Focal Strategic Question: " + (company.focalQuestion || "General strategy") + "\\n" +
       "Horizon Year: " + (company.horizonYear || "2030") + "\\n\\n" +
@@ -16,8 +16,8 @@ export const classifyForces = async (req, res, next) => {
       "Return JSON exactly matching this format: { \"predetermined\": [], \"uncertainties\": [] }";
 
     const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 800, MODELS.HAIKU);
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       data: result,
       history: [
         ...(conversationHistory || []),
@@ -33,8 +33,8 @@ export const classifyForces = async (req, res, next) => {
 export const selectAxes = async (req, res, next) => {
   try {
     const { company, classification, conversationHistory } = req.body;
-    
-    const specificPrompt = 
+
+    const specificPrompt =
       "Company Context: " + JSON.stringify(company) + "\\n\\n" +
       "From this list of critical uncertainties:\\n" +
       JSON.stringify(classification.uncertainties) + "\\n\\n" +
@@ -62,8 +62,8 @@ export const selectAxes = async (req, res, next) => {
       "}";
 
     const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 1000, MODELS.HAIKU);
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       data: result,
       history: [
         ...(conversationHistory || []),
@@ -79,31 +79,41 @@ export const selectAxes = async (req, res, next) => {
 export const buildScenarios = async (req, res, next) => {
   try {
     const { company, axes, forces, conversationHistory } = req.body;
-    
-    const specificPrompt = 
-      "Build 4 scenario narratives for " + company.name + ".\\n" +
-      "Focal question: " + company.focalQuestion + "\\n" +
-      "Axis A: " + axes.axisA.label + " — poles: [" + axes.axisA.poleA1 + "] vs [" + axes.axisA.poleA2 + "]\\n" +
-      "Axis B: " + axes.axisB.label + " — poles: [" + axes.axisB.poleB1 + "] vs [" + axes.axisB.poleB2 + "]\\n\\n" +
-      "All driving forces for context: " + JSON.stringify(forces) + "\\n\\n" +
-      (req.body.existingScenarios ? "Use these pre-defined scenario names and summaries as your starting point: " + JSON.stringify(req.body.existingScenarios) + "\\n\\n" : "") +
-      "For each of the 4 quadrant combinations (A1+B1, A1+B2, A2+B1, A2+B2):\\n" +
-      "- Give the scenario a vivid memorable name\\n" +
-      "- Write a 3-4 paragraph story of what the world looks like in " + company.horizonYear + " in this scenario\\n" +
-      "- Explain what this means specifically for " + company.name + "\\n" +
-      "- List 4-5 early warning signposts — observable signals that this scenario is beginning to unfold\\n\\n" +
-      "Use the benchmark example as your quality target for depth and specificity.\\n" +
-      "Return JSON exactly matching this format:\\n" +
-      "{ \"scenarios\": [ { \"id\": 1, \"name\": \"string\", \"combination\": \"A1+B1\", \"story\": \"string\", \"implications\": \"string\", \"signposts\": [\"string\"] } ] }";
 
-    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.7, 4096, MODELS.SONNET);
-    res.status(200).json({ 
-      success: true, 
-      data: result,
+    // Quadrant definitions
+    const quadrants = [
+      { id: 1, comb: "A1+B1", pA: axes.axisA.poleA1, pB: axes.axisB.poleB1 },
+      { id: 2, comb: "A1+B2", pA: axes.axisA.poleA1, pB: axes.axisB.poleB2 },
+      { id: 3, comb: "A2+B1", pA: axes.axisA.poleA2, pB: axes.axisB.poleB1 },
+      { id: 4, comb: "A2+B2", pA: axes.axisA.poleA2, pB: axes.axisB.poleB2 }
+    ];
+
+    const scenarioPromises = quadrants.map(q => {
+      const specificPrompt =
+        `Build the scenario story for ${company.name} in the world where both ${axes.axisA.label} is ${q.pA} AND ${axes.axisB.label} is ${q.pB}.\n` +
+        `Focal question: ${company.focalQuestion}\n` +
+        `All driving forces for context: ${JSON.stringify(forces)}\n\n` +
+        `Task: Generate 1 detailed scenario for this quadrant (${q.comb}).\n` +
+        `- Give it a vivid memorable name.\n` +
+        `- Write a 2-3 paragraph story of the world in ${company.horizonYear}.\n` +
+        `- Explain implications for ${company.name} (2-3 sentences).\n` +
+        `- List 3-4 early warning signposts.\n\n` +
+        `Return JSON exactly matching this format: { "name": "string", "story": "string", "implications": "string", "signposts": ["string"] }`;
+
+      return callClaudeJSON(conversationHistory, specificPrompt, 0.7, 1200, MODELS.SONNET)
+        .then(result => ({ ...result, id: q.id, combination: q.comb }));
+    });
+
+    const scenarios = await Promise.all(scenarioPromises);
+    const finalResult = { scenarios };
+
+    res.status(200).json({
+      success: true,
+      data: finalResult,
       history: [
         ...(conversationHistory || []),
-        { role: 'user', content: "Build scenarios." },
-        { role: 'assistant', content: JSON.stringify(result) }
+        { role: 'user', content: "Build 4 scenarios." },
+        { role: 'assistant', content: JSON.stringify(finalResult) }
       ]
     });
   } catch (error) {
@@ -114,15 +124,15 @@ export const buildScenarios = async (req, res, next) => {
 export const runWindTunnel = async (req, res, next) => {
   try {
     const { company, scenarios, strategicOptions, conversationHistory } = req.body;
-    
+
     const hasOptions = strategicOptions && strategicOptions.length > 0;
 
-    const specificPrompt = 
+    const specificPrompt =
       "Test strategic options against scenarios (the \"Wind Tunnel\").\n" +
       "Company: " + company.name + "\n" +
       "Scenarios: " + JSON.stringify(scenarios.map(s => s.name)) + "\n" +
-      (hasOptions 
-        ? "Strategic options to test: " + JSON.stringify(strategicOptions) + "\n" 
+      (hasOptions
+        ? "Strategic options to test: " + JSON.stringify(strategicOptions) + "\n"
         : "TASK: You must first GENERATE 3 distinct, high-impact strategic options for this company based on their context and the 4 scenarios provided. Label them Option A, B, and C.\n") +
       "\n" +
       "For each option × scenario combination:\n" +
@@ -139,8 +149,8 @@ export const runWindTunnel = async (req, res, next) => {
       "{ " + (hasOptions ? "" : "\"generatedOptions\": [\"string\"], ") + "\"windTunnel\": [ [ { \"rating\": \"string\", \"reasoning\": \"string\" } ] ], \"robustMoves\": { \"noRegret\": [\"string\"], \"keepOpen\": [\"string\"], \"defer\": [\"string\"] }, \"strategicConclusion\": \"string\", \"recommendedOption\": \"string\" }";
 
     const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.2, 3500, MODELS.SONNET);
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       data: result,
       history: [
         ...(conversationHistory || []),
@@ -156,8 +166,8 @@ export const runWindTunnel = async (req, res, next) => {
 export const generateReport = async (req, res, next) => {
   try {
     const { workshopState } = req.body;
-    
-    const specificPrompt = 
+
+    const specificPrompt =
       "You are compiling the final executive report for a scenario planning workshop.\\n" +
       "Here is the complete state of everything decided and generated in the workshop:\\n" +
       JSON.stringify(workshopState) + "\\n\\n" +
@@ -174,8 +184,8 @@ export const generateReport = async (req, res, next) => {
       "{ \"fullReportMarkdown\": \"string (the markdown content)\" }";
 
     const result = await callClaudeJSON([], specificPrompt, 0.5, 8192, MODELS.SONNET);
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       data: result
     });
   } catch (error) {
