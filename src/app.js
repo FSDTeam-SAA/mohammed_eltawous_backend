@@ -29,6 +29,8 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5000',
   'https://mohamedeltawous-website.vercel.app',
+  'http://secondsight.tech',
+  'https://secondsight.tech'
 ];
 
 const corsOptions = {
@@ -59,7 +61,7 @@ app.use(morgan('combined'));
 
 // Set up body parsing middleware
 app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({limit: '50mb', extended: true }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 
 // Set up rate limiting middleware
