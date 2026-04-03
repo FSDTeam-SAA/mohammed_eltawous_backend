@@ -42,15 +42,13 @@ export const selectAxes = async (req, res, next) => {
       "Critical Uncertainties: " + JSON.stringify(classification.uncertainties);
 
     const specificPrompt =
-      "Task: Select EXACTLY 2 critical uncertainties from the Shared Context to become the scenario axes.\n" +
+      "Task: Select EXACTLY 2 individual critical uncertainties from the Shared Context to become the scenario axes.\n" +
       "Selection Criteria:\n" +
       "1. Highest strategic impact on the focal question.\n" +
       "2. Genuine unpredictability.\n" +
       "3. Independence (uncorrelated — if one moves, the other doesn't necessarily move with it).\n\n" +
+      "CRITICAL: Do NOT synthesize or combine multiple forces into a 'theme'. Pick exactly one specific, individual force from the input list for Axis A and one for Axis B.\n\n" +
       "For each axis define 2 polar end labels (extreme opposite outcomes).\n\n" +
-      "CRITICAL FOR CLIENT VISIBILITY:\n" +
-      "In the 'reason' field for each axis, you MUST explicitly cite which specific Driving Forces from the Shared Context are being taken into account. " +
-      "Start the reason by listing the relevant forces (e.g., 'Taken into account: [Force A], [Force B]. This is critical because...') to show exactly which input data was used.\n\n" +
       "Also, pre-generate 4 scenario names and 1-sentence summaries for the resulting matrix quadrants:\n" +
       "- topRight (poleA2 + poleB2)\n" +
       "- topLeft (poleA1 + poleB2)\n" +
@@ -58,8 +56,8 @@ export const selectAxes = async (req, res, next) => {
       "- bottomRight (poleA2 + poleB1)\n\n" +
       "Return JSON exactly matching this format:\n" +
       "{\n" +
-      "  \"axisA\": { \"label\": \"string\", \"poleA1\": \"string\", \"poleA2\": \"string\", \"reason\": \"string\" },\n" +
-      "  \"axisB\": { \"label\": \"string\", \"poleB1\": \"string\", \"poleB2\": \"string\", \"reason\": \"string\" },\n" +
+      "  \"axisA\": { \"label\": \"concise UI name\", \"selectedForce\": \"exact original force string from input\", \"poleA1\": \"string\", \"poleA2\": \"string\", \"reason\": \"string\" },\n" +
+      "  \"axisB\": { \"label\": \"concise UI name\", \"selectedForce\": \"exact original force string from input\", \"poleB1\": \"string\", \"poleB2\": \"string\", \"reason\": \"string\" },\n" +
       "  \"scenarios\": {\n" +
       "    \"topRight\": { \"name\": \"string\", \"summary\": \"string\" },\n" +
       "    \"topLeft\": { \"name\": \"string\", \"summary\": \"string\" },\n" +
