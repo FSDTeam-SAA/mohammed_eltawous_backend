@@ -69,7 +69,7 @@ export const callClaudeJSON = async (messages, specificPrompt, temperature = 0.5
       system: systemBlocks,
       messages: [
         ...defaultMessages,
-        { role: 'user', content: "Return ONLY valid JSON." }
+        { role: 'user', content: "Please perform the following task now:\n\n" + specificPrompt + "\n\nCRITICAL: Return ONLY valid JSON." }
       ],
     }, {
       headers: {

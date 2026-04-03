@@ -65,7 +65,7 @@ export const selectAxes = async (req, res, next) => {
       "  }\n" +
       "}";
 
-    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 1000, MODELS.HAIKU, sharedContext);
+    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 1500, MODELS.SONNET, sharedContext);
     res.status(200).json({
       success: true,
       data: result,
