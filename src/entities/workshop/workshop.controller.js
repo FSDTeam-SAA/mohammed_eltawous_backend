@@ -8,14 +8,15 @@ export const classifyForces = async (req, res, next) => {
       "Detailed Company context: " + JSON.stringify(company) + "\\n\\n" +
       "Focal Strategic Question: " + (company.focalQuestion || "General strategy") + "\\n" +
       "Horizon Year: " + (company.horizonYear || "2030") + "\\n\\n" +
-      "Here are the driving forces identified: " + JSON.stringify(forces) + "\\n\\n" +
-      "Task: Classify these driving forces with respect to the Focal Question above.\\n" +
+      "Here are the driving forces identified (process ALL of them): " + JSON.stringify(forces) + "\\n\\n" +
+      "Task: Comprehensive Classification. Classify EVERY driving force provided with respect to the Focal Question above.\\n" +
       "Categorize them into:\\n" +
       "1. Predetermined elements (structural changes almost certain to happen regardless of the future outcome).\\n" +
       "2. Critical uncertainties (high impact on the focal question but genuinely unpredictable outcome).\\n\\n" +
-      "Return JSON exactly matching this format: { \"predetermined\": [], \"uncertainties\": [] }";
+      "Return JSON exactly matching this format: { \"predetermined\": [], \"uncertainties\": [] }.\\n" +
+      "CRITICAL: Do not omit any forces. If a force is provided in the input, it must appear in exactly one of the two categories above.";
 
-    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 800, MODELS.HAIKU);
+    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 4096, MODELS.SONNET);
     res.status(200).json({
       success: true,
       data: result,
