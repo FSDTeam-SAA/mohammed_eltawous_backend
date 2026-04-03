@@ -91,17 +91,17 @@ export const buildScenarios = async (req, res, next) => {
 
     const scenarioPromises = quadrants.map(q => {
       const specificPrompt =
-        `Build the scenario story for ${company.name} in the world where both ${axes.axisA.label} is ${q.pA} AND ${axes.axisB.label} is ${q.pB}.\n` +
+        `Build a scenario story for ${company.name} in the world where both ${axes.axisA.label} is ${q.pA} AND ${axes.axisB.label} is ${q.pB}.\n` +
         `Focal question: ${company.focalQuestion}\n` +
         `All driving forces for context: ${JSON.stringify(forces)}\n\n` +
-        `Task: Generate 1 detailed scenario for this quadrant (${q.comb}).\n` +
+        `Task: Concise Scenario Construction. Generate 1 scenario for this quadrant (${q.comb}).\n` +
         `- Give it a vivid memorable name.\n` +
-        `- Write a 2-3 paragraph story of the world in ${company.horizonYear}.\n` +
-        `- Explain implications for ${company.name} (2-3 sentences).\n` +
-        `- List 3-4 early warning signposts.\n\n` +
+        `- Write a concise but impactful 1-2 paragraph story of the world in ${company.horizonYear}.\n` +
+        `- Explain implications for ${company.name} (exactly 2 concise sentences).\n` +
+        `- List 3-4 key early warning signposts.\n\n` +
         `Return JSON exactly matching this format: { "name": "string", "story": "string", "implications": "string", "signposts": ["string"] }`;
 
-      return callClaudeJSON(conversationHistory, specificPrompt, 0.7, 1200, MODELS.SONNET)
+      return callClaudeJSON(conversationHistory, specificPrompt, 0.7, 2500, MODELS.SONNET)
         .then(result => ({ ...result, id: q.id, combination: q.comb }));
     });
 
