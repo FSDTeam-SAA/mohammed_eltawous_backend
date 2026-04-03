@@ -48,6 +48,9 @@ export const selectAxes = async (req, res, next) => {
       "2. Genuine unpredictability.\n" +
       "3. Independence (uncorrelated — if one moves, the other doesn't necessarily move with it).\n\n" +
       "For each axis define 2 polar end labels (extreme opposite outcomes).\n\n" +
+      "CRITICAL FOR CLIENT VISIBILITY:\n" +
+      "In the 'reason' field for each axis, you MUST explicitly cite which specific Driving Forces from the Shared Context are being taken into account. " +
+      "Start the reason by listing the relevant forces (e.g., 'Taken into account: [Force A], [Force B]. This is critical because...') to show exactly which input data was used.\n\n" +
       "Also, pre-generate 4 scenario names and 1-sentence summaries for the resulting matrix quadrants:\n" +
       "- topRight (poleA2 + poleB2)\n" +
       "- topLeft (poleA1 + poleB2)\n" +
