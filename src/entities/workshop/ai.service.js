@@ -35,21 +35,38 @@ const extractJSON = (text) => {
   return text.substring(firstBrace, lastBrace + 1);
 };
 
-export const callClaudeJSON = async (messages, specificPrompt, temperature = 0.5, maxTokens = 4096, modelSelection = MODELS.SONNET) => {
+export const callClaudeJSON = async (messages, specificPrompt, temperature = 0.5, maxTokens = 4096, modelSelection = MODELS.SONNET, sharedContext = '') => {
   let rawText = '';
   try {
     const defaultMessages = messages && messages.length > 0 ? messages : [];
+    
+    // Construct system blocks for optimal caching
+    const systemBlocks = [
+      {
+        type: "text",
+        text: systemPrompt,
+        cache_control: { type: "ephemeral" }
+      }
+    ];
+
+    if (sharedContext) {
+      systemBlocks.push({
+        type: "text",
+        text: "\n\nSHARED CONTEXT:\n" + sharedContext,
+        cache_control: { type: "ephemeral" }
+      });
+    }
+
+    systemBlocks.push({
+      type: "text",
+      text: "\n\nINSTRUCTIONS:\n" + specificPrompt
+    });
+
     const response = await anthropic.messages.create({
       model: modelSelection,
       max_tokens: maxTokens,
       temperature,
-      system: [
-        {
-          type: "text",
-          text: systemPrompt + "\n\n" + specificPrompt,
-          cache_control: { type: "ephemeral" }
-        }
-      ],
+      system: systemBlocks,
       messages: [
         ...defaultMessages,
         { role: 'user', content: "Return ONLY valid JSON." }

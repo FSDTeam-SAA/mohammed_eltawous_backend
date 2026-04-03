@@ -4,19 +4,21 @@ export const classifyForces = async (req, res, next) => {
   try {
     const { company, forces, conversationHistory } = req.body;
 
+    const sharedContext = 
+      "Detailed Company context: " + JSON.stringify(company) + "\n\n" +
+      "All driving forces: " + JSON.stringify(forces);
+
     const specificPrompt =
-      "Detailed Company context: " + JSON.stringify(company) + "\\n\\n" +
-      "Focal Strategic Question: " + (company.focalQuestion || "General strategy") + "\\n" +
-      "Horizon Year: " + (company.horizonYear || "2030") + "\\n\\n" +
-      "Here are the driving forces identified (process ALL of them): " + JSON.stringify(forces) + "\\n\\n" +
-      "Task: Comprehensive Classification. Classify EVERY driving force provided with respect to the Focal Question above.\\n" +
-      "Categorize them into:\\n" +
-      "1. Predetermined elements (structural changes almost certain to happen regardless of the future outcome).\\n" +
-      "2. Critical uncertainties (high impact on the focal question but genuinely unpredictable outcome).\\n\\n" +
-      "Return JSON exactly matching this format: { \"predetermined\": [], \"uncertainties\": [] }.\\n" +
+      "Focal Strategic Question: " + (company.focalQuestion || "General strategy") + "\n" +
+      "Horizon Year: " + (company.horizonYear || "2030") + "\n\n" +
+      "Task: Comprehensive Classification. Classify EVERY driving force provided in the Shared Context with respect to the Focal Question above.\n" +
+      "Categorize them into:\n" +
+      "1. Predetermined elements (structural changes almost certain to happen regardless of the future outcome).\n" +
+      "2. Critical uncertainties (high impact on the focal question but genuinely unpredictable outcome).\n\n" +
+      "Return JSON exactly matching this format: { \"predetermined\": [], \"uncertainties\": [] }.\n" +
       "CRITICAL: Do not omit any forces. If a force is provided in the input, it must appear in exactly one of the two categories above.";
 
-    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 4096, MODELS.SONNET);
+    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 4096, MODELS.SONNET, sharedContext);
     res.status(200).json({
       success: true,
       data: result,
@@ -35,34 +37,35 @@ export const selectAxes = async (req, res, next) => {
   try {
     const { company, classification, conversationHistory } = req.body;
 
+    const sharedContext = 
+      "Company Context: " + JSON.stringify(company) + "\n\n" +
+      "Critical Uncertainties: " + JSON.stringify(classification.uncertainties);
+
     const specificPrompt =
-      "Company Context: " + JSON.stringify(company) + "\\n\\n" +
-      "From this list of critical uncertainties:\\n" +
-      JSON.stringify(classification.uncertainties) + "\\n\\n" +
-      "Task: Select EXACTLY 2 critical uncertainties to become the scenario axes.\\n" +
-      "Selection Criteria:\\n" +
-      "1. Highest strategic impact on the focal question.\\n" +
-      "2. Genuine unpredictability.\\n" +
-      "3. Independence (uncorrelated — if one moves, the other doesn't necessarily move with it).\\n\\n" +
-      "For each axis define 2 polar end labels (extreme opposite outcomes).\\n" +
-      "Also, pre-generate 4 scenario names and 1-sentence summaries for the resulting matrix quadrants:\\n" +
-      "- topRight (poleA2 + poleB2)\\n" +
-      "- topLeft (poleA1 + poleB2)\\n" +
-      "- bottomLeft (poleA1 + poleB1)\\n" +
-      "- bottomRight (poleA2 + poleB1)\\n\\n" +
-      "Return JSON exactly matching this format:\\n" +
-      "{" +
-      "  \"axisA\": { \"label\": \"string\", \"poleA1\": \"string\", \"poleA2\": \"string\", \"reason\": \"string\" }," +
-      "  \"axisB\": { \"label\": \"string\", \"poleB1\": \"string\", \"poleB2\": \"string\", \"reason\": \"string\" }," +
-      "  \"scenarios\": {" +
-      "    \"topRight\": { \"name\": \"string\", \"summary\": \"string\" }," +
-      "    \"topLeft\": { \"name\": \"string\", \"summary\": \"string\" }," +
-      "    \"bottomLeft\": { \"name\": \"string\", \"summary\": \"string\" }," +
-      "    \"bottomRight\": { \"name\": \"string\", \"summary\": \"string\" }" +
-      "  }" +
+      "Task: Select EXACTLY 2 critical uncertainties from the Shared Context to become the scenario axes.\n" +
+      "Selection Criteria:\n" +
+      "1. Highest strategic impact on the focal question.\n" +
+      "2. Genuine unpredictability.\n" +
+      "3. Independence (uncorrelated — if one moves, the other doesn't necessarily move with it).\n\n" +
+      "For each axis define 2 polar end labels (extreme opposite outcomes).\n\n" +
+      "Also, pre-generate 4 scenario names and 1-sentence summaries for the resulting matrix quadrants:\n" +
+      "- topRight (poleA2 + poleB2)\n" +
+      "- topLeft (poleA1 + poleB2)\n" +
+      "- bottomLeft (poleA1 + poleB1)\n" +
+      "- bottomRight (poleA2 + poleB1)\n\n" +
+      "Return JSON exactly matching this format:\n" +
+      "{\n" +
+      "  \"axisA\": { \"label\": \"string\", \"poleA1\": \"string\", \"poleA2\": \"string\", \"reason\": \"string\" },\n" +
+      "  \"axisB\": { \"label\": \"string\", \"poleB1\": \"string\", \"poleB2\": \"string\", \"reason\": \"string\" },\n" +
+      "  \"scenarios\": {\n" +
+      "    \"topRight\": { \"name\": \"string\", \"summary\": \"string\" },\n" +
+      "    \"topLeft\": { \"name\": \"string\", \"summary\": \"string\" },\n" +
+      "    \"bottomLeft\": { \"name\": \"string\", \"summary\": \"string\" },\n" +
+      "    \"bottomRight\": { \"name\": \"string\", \"summary\": \"string\" }\n" +
+      "  }\n" +
       "}";
 
-    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 1000, MODELS.HAIKU);
+    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.1, 1000, MODELS.HAIKU, sharedContext);
     res.status(200).json({
       success: true,
       data: result,
@@ -81,6 +84,10 @@ export const buildScenarios = async (req, res, next) => {
   try {
     const { company, axes, forces, conversationHistory } = req.body;
 
+    const sharedContext = 
+      "Detailed Company context: " + JSON.stringify(company) + "\n\n" +
+      "All driving forces: " + JSON.stringify(forces);
+
     // Quadrant definitions
     const quadrants = [
       { id: 1, comb: "A1+B1", pA: axes.axisA.poleA1, pB: axes.axisB.poleB1 },
@@ -89,11 +96,11 @@ export const buildScenarios = async (req, res, next) => {
       { id: 4, comb: "A2+B2", pA: axes.axisA.poleA2, pB: axes.axisB.poleB2 }
     ];
 
-    const scenarioPromises = quadrants.map(q => {
+    // Helper to generate a single scenario
+    const generateScenario = async (q) => {
       const specificPrompt =
-        `Build a scenario story for ${company.name} in the world where both ${axes.axisA.label} is ${q.pA} AND ${axes.axisB.label} is ${q.pB}.\n` +
-        `Focal question: ${company.focalQuestion}\n` +
-        `All driving forces for context: ${JSON.stringify(forces)}\n\n` +
+        `Build a scenario story where both ${axes.axisA.label} is ${q.pA} AND ${axes.axisB.label} is ${q.pB}.\n` +
+        `Focal question: ${company.focalQuestion}\n\n` +
         `Task: Concise Scenario Construction. Generate 1 scenario for this quadrant (${q.comb}).\n` +
         `- Give it a vivid memorable name.\n` +
         `- Write a concise but impactful 1-2 paragraph story of the world in ${company.horizonYear}.\n` +
@@ -101,12 +108,16 @@ export const buildScenarios = async (req, res, next) => {
         `- List 3-4 key early warning signposts.\n\n` +
         `Return JSON exactly matching this format: { "name": "string", "story": "string", "implications": "string", "signposts": ["string"] }`;
 
-      return callClaudeJSON(conversationHistory, specificPrompt, 0.7, 2500, MODELS.SONNET)
-        .then(result => ({ ...result, id: q.id, combination: q.comb }));
-    });
+      const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.7, 2500, MODELS.SONNET, sharedContext);
+      return { ...result, id: q.id, combination: q.comb };
+    };
 
-    const scenarios = await Promise.all(scenarioPromises);
-    const finalResult = { scenarios };
+    // To prevent hitting TPM limits and deployment timeouts on huge data, 
+    // we process scenarios in batches (2 + 2)
+    const batch1 = await Promise.all([generateScenario(quadrants[0]), generateScenario(quadrants[1])]);
+    const batch2 = await Promise.all([generateScenario(quadrants[2]), generateScenario(quadrants[3])]);
+
+    const finalResult = { scenarios: [...batch1, ...batch2] };
 
     res.status(200).json({
       success: true,
@@ -207,7 +218,11 @@ const specificPrompt =
   "}";
 
 
-    const result = await callClaudeJSON(conversationHistory,  specificPrompt, 0.2, 3500, MODELS.SONNET);
+    const sharedContext = 
+      "Company: " + JSON.stringify(company) + "\n\n" +
+      "Scenarios: " + JSON.stringify(scenarios.map(s => ({ name: s.name, story: s.story })));
+
+    const result = await callClaudeJSON(conversationHistory,  specificPrompt, 0.2, 3500, MODELS.SONNET, sharedContext);
     // const result = await callClaudeJSON(
     //   [], // 🔥 REMOVE history
     //   systemLock,
@@ -235,15 +250,17 @@ export const generateReport = async (req, res, next) => {
     const { workshopState } = req.body;
     const { company, classification, axes, scenarios, windTunnelResult } = workshopState;
 
+    const sharedContext = "Full Workshop State Context: " + JSON.stringify(workshopState);
+
     // Helper to call Claude with a specific prompt and model
     const getSection = (title, prompt, model = MODELS.HAIKU) => {
-      const fullPrompt =
+      const specificPrompt =
         `You are a premium strategy consultant (McKinsey/Shell style).\n` +
         `Task: Generate the "${title}" section of a scenario planning report for ${company.name}.\n\n` +
-        `Full Context: ${JSON.stringify(workshopState)}\n\n` +
         `Specific Instructions for this section:\n${prompt}\n\n` +
         `Return JSON: { "content": "string (markdown format, no top-level # header)" }`;
-      return callClaudeJSON([], fullPrompt, 0.5, 2000, model);
+      
+      return callClaudeJSON([], specificPrompt, 0.5, 2000, model, sharedContext);
     };
 
     const sectionPromises = [
