@@ -4,7 +4,7 @@ export const classifyForces = async (req, res, next) => {
   try {
     const { company, forces, conversationHistory } = req.body;
 
-    const sharedContext = 
+    const sharedContext =
       "Detailed Company context: " + JSON.stringify(company) + "\n\n" +
       "All driving forces: " + JSON.stringify(forces);
 
@@ -37,7 +37,7 @@ export const selectAxes = async (req, res, next) => {
   try {
     const { company, classification, conversationHistory } = req.body;
 
-    const sharedContext = 
+    const sharedContext =
       "Company Context: " + JSON.stringify(company) + "\n\n" +
       "Critical Uncertainties: " + JSON.stringify(classification.uncertainties);
 
@@ -84,7 +84,7 @@ export const buildScenarios = async (req, res, next) => {
   try {
     const { company, axes, forces, conversationHistory } = req.body;
 
-    const sharedContext = 
+    const sharedContext =
       "Detailed Company context: " + JSON.stringify(company) + "\n\n" +
       "All driving forces: " + JSON.stringify(forces);
 
@@ -172,57 +172,57 @@ If you deviate, the response is invalid.
     //   "{ " + (hasOptions ? "" : "\"generatedOptions\": [\"string\"], ") + "\"windTunnel\": [ [ { \"rating\": \"string\", \"reasoning\": \"string\" } ] ], \"robustMoves\": { \"noRegret\": [\"string\"], \"keepOpen\": [\"string\"], \"defer\": [\"string\"] }, \"strategicConclusion\": \"string\", \"recommendedOption\": \"string\" }";
 
 
-const specificPrompt =
-  "TASK: WIND TUNNEL ANALYSIS ONLY.\n" +
-  "You are evaluating strategic options across predefined scenarios.\n\n" +
+    const specificPrompt =
+      "TASK: WIND TUNNEL ANALYSIS ONLY.\n" +
+      "You are evaluating strategic options across predefined scenarios.\n\n" +
 
-  "CRITICAL INSTRUCTIONS:\n" +
-  "- DO NOT generate or repeat scenarios\n" +
-  "- DO NOT include narratives, opportunities, or threats\n" +
-  "- DO NOT return anything except the required JSON\n" +
-  "- If you deviate from the format, the response is invalid\n\n" +
+      "CRITICAL INSTRUCTIONS:\n" +
+      "- DO NOT generate or repeat scenarios\n" +
+      "- DO NOT include narratives, opportunities, or threats\n" +
+      "- DO NOT return anything except the required JSON\n" +
+      "- If you deviate from the format, the response is invalid\n\n" +
 
-  "Company: " + company.name + "\n" +
-  "Focal Question: " + company.focalQuestion + "\n" +
-  "Horizon Year: " + company.horizonYear + "\n\n" +
+      "Company: " + company.name + "\n" +
+      "Focal Question: " + company.focalQuestion + "\n" +
+      "Horizon Year: " + company.horizonYear + "\n\n" +
 
-  "Scenarios (names only): " + JSON.stringify(scenarios.map(s => s.name)) + "\n\n" +
+      "Scenarios (names only): " + JSON.stringify(scenarios.map(s => s.name)) + "\n\n" +
 
-  (hasOptions
-    ? "Strategic options: " + JSON.stringify(strategicOptions) + "\n\n"
-    : "TASK: First generate 3 distinct, high-impact strategic options labeled exactly as Option A, Option B, Option C.\n\n") +
+      (hasOptions
+        ? "Strategic options: " + JSON.stringify(strategicOptions) + "\n\n"
+        : "TASK: First generate 3 distinct, high-impact strategic options labeled exactly as Option A, Option B, Option C.\n\n") +
 
-  "EVALUATION INSTRUCTIONS:\n" +
-  "For EACH combination of (Option × Scenario):\n" +
-  "- Provide rating: Excellent | Good | Moderate | Poor\n" +
-  "- Provide reasoning: exactly 2 concise sentences\n\n" +
+      "EVALUATION INSTRUCTIONS:\n" +
+      "For EACH combination of (Option × Scenario):\n" +
+      "- Provide rating: Excellent | Good | Moderate | Poor\n" +
+      "- Provide reasoning: exactly 2 concise sentences\n\n" +
 
-  "Also identify:\n" +
-  "- No-regret moves (work across ALL scenarios)\n" +
-  "- Options to keep open (hedge bets)\n" +
-  "- Decisions to defer (wait for more signals)\n\n" +
+      "Also identify:\n" +
+      "- No-regret moves (work across ALL scenarios)\n" +
+      "- Options to keep open (hedge bets)\n" +
+      "- Decisions to defer (wait for more signals)\n\n" +
 
-  "FINAL OUTPUT FORMAT (STRICT JSON ONLY):\n" +
-  "{\n" +
-  (hasOptions ? "" : "  \"generatedOptions\": [\"string\", \"string\", \"string\"],\n") +
-  "  \"windTunnel\": [\n" +
-  "    [ { \"rating\": \"string\", \"reasoning\": \"string\" } ]\n" +
-  "  ],\n" +
-  "  \"robustMoves\": {\n" +
-  "    \"noRegret\": [\"string\"],\n" +
-  "    \"keepOpen\": [\"string\"],\n" +
-  "    \"defer\": [\"string\"]\n" +
-  "  },\n" +
-  "  \"strategicConclusion\": \"string\",\n" +
-  "  \"recommendedOption\": \"string\"\n" +
-  "}";
+      "FINAL OUTPUT FORMAT (STRICT JSON ONLY):\n" +
+      "{\n" +
+      (hasOptions ? "" : "  \"generatedOptions\": [\"string\", \"string\", \"string\"],\n") +
+      "  \"windTunnel\": [\n" +
+      "    [ { \"rating\": \"string\", \"reasoning\": \"string\" } ]\n" +
+      "  ],\n" +
+      "  \"robustMoves\": {\n" +
+      "    \"noRegret\": [\"string\"],\n" +
+      "    \"keepOpen\": [\"string\"],\n" +
+      "    \"defer\": [\"string\"]\n" +
+      "  },\n" +
+      "  \"strategicConclusion\": \"string\",\n" +
+      "  \"recommendedOption\": \"string\"\n" +
+      "}";
 
 
-    const sharedContext = 
+    const sharedContext =
       "Company: " + JSON.stringify(company) + "\n\n" +
       "Scenarios: " + JSON.stringify(scenarios.map(s => ({ name: s.name, story: s.story })));
 
-    const result = await callClaudeJSON(conversationHistory,  specificPrompt, 0.2, 3500, MODELS.SONNET, sharedContext);
+    const result = await callClaudeJSON(conversationHistory, specificPrompt, 0.2, 3500, MODELS.SONNET, sharedContext);
     // const result = await callClaudeJSON(
     //   [], // 🔥 REMOVE history
     //   systemLock,
@@ -259,7 +259,7 @@ export const generateReport = async (req, res, next) => {
         `Task: Generate the "${title}" section of a scenario planning report for ${company.name}.\n\n` +
         `Specific Instructions for this section:\n${prompt}\n\n` +
         `Return JSON: { "content": "string (markdown format, no top-level # header)" }`;
-      
+
       return callClaudeJSON([], specificPrompt, 0.5, 2000, model, sharedContext);
     };
 
