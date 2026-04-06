@@ -254,13 +254,70 @@
             </div>
 
             <div style="display: flex; justify-content: flex-end; margin-top: 3rem;">
-                <button style="background: #10b981;" onclick="alert('Generating Final Report...')">Generate Executive
-                    Report →</button>
+                <button style="background: #10b981;" id="reportBtn" onclick="generateExecutiveReport()">Generate Executive Report →</button>
             </div>
         </section>
     </div>
 
     <script>
+        let lastAnalysisResult = null;
+
+        async function generateExecutiveReport() {
+            if (!lastAnalysisResult) {
+                alert("Please run the Stress Test first to generate data for the report.");
+                return;
+            }
+
+            const btn = document.getElementById('reportBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Generating Premium PDF...";
+            btn.disabled = true;
+
+            try {
+                const workshopState = {
+                    company: { 
+                        name: "AlWasl Capital", 
+                        focalQuestion: "How should we transform our business model for 2030?", 
+                        horizonYear: "2030" 
+                    },
+                    scenarios: [
+                        { name: "The Velvet Cage", story: "A world of high regulation and low digital adoption." },
+                        { name: "The Gilded Souk", story: "A world of regional fragmentation and physical trade." },
+                        { name: "The Digital Majlis", story: "A world of high tech adoption and decentralized power." },
+                        { name: "The Golden Gateway", story: "A world of global integration and massive infrastructure." }
+                    ],
+                    windTunnel: lastAnalysisResult.windTunnel,
+                    robustMoves: lastAnalysisResult.robustMoves,
+                    strategicConclusion: lastAnalysisResult.strategicConclusion,
+                    recommendedOption: lastAnalysisResult.recommendedOption
+                };
+
+                const response = await fetch('/api/v1/workshop/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ workshopState })
+                });
+
+                if (!response.ok) throw new Error("Failed to generate report");
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Strategic_Report_${Date.now()}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                
+                btn.innerText = "✅ Report Downloaded";
+                setTimeout(() => btn.innerText = originalText, 3000);
+            } catch (e) {
+                alert("Report Error: " + e.message);
+                btn.innerText = originalText;
+            } finally {
+                btn.disabled = false;
+            }
+        }
         async function suggestOptions() {
             const btn = document.getElementById('suggestBtn');
             const inputs = document.querySelectorAll('.opt-input');
@@ -322,6 +379,7 @@
                 });
 
                 const json = await response.json();
+                lastAnalysisResult = json.data;
                 renderResults(json.data, options);
                 results.style.display = 'block';
                 window.scrollTo({ top: results.offsetTop - 50, behavior: 'smooth' });

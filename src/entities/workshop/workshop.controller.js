@@ -1,4 +1,3 @@
-import { marked } from 'marked';
 import { generatePremiumPDF } from '../../utility/pdfGenerator.js';
 import { callClaudeJSON, MODELS } from './ai.service.js';
 
@@ -275,11 +274,8 @@ export const generateReport = async (req, res, next) => {
       `## 6. Early Warning Dashboard\n${results[6].content}`
     ].join("\n\n");
 
-    // Convert Markdown to HTML
-    const htmlContent = marked.parse(reportMarkdown);
-
-    // Generate Premium PDF
-    const pdfBuffer = await generatePremiumPDF(htmlContent, { companyName: company.name });
+    // Generate Premium PDF (Using Markdown directly for better speed/styling)
+    const pdfBuffer = await generatePremiumPDF(reportMarkdown, { companyName: company.name });
 
     res.set({
       'Content-Type': 'application/pdf',
