@@ -349,18 +349,16 @@
                     })
                 });
 
-                if (!response.ok) throw new Error("Failed to download PDF");
+                const json = await response.json();
+                if (!json.success) throw new Error(json.message || "Failed to download PDF");
 
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Strategic_Report_AlWasl_${Date.now()}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
+                // Instead of a blob, we now have a public URL
+                const url = json.data.url;
                 
-                btn.innerText = "✅ Downloaded";
+                // Open in new tab or trigger download
+                window.open(url, '_blank');
+                
+                btn.innerText = "✅ Opened in New Tab";
                 setTimeout(() => btn.innerText = originalText, 3000);
             } catch (e) {
                 alert("Download Error: " + e.message);

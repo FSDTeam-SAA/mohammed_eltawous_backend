@@ -1,5 +1,6 @@
 import { generatePremiumPDF } from '../../utility/pdfGenerator.js';
 import { callClaudeJSON, MODELS } from './ai.service.js';
+import { cloudinaryUploadBuffer } from '../../lib/cloudinaryUpload.js';
 
 export const classifyForces = async (req, res, next) => {
   try {
@@ -256,8 +257,7 @@ export const generateReport = async (req, res, next) => {
 };
 
 /**
- * FAST PDF Export: Converts provided Markdown to PDF.
- * This API is fast and has no AI calls.
+ * FAST PDF Export & Cloud Upload: Converts provided Markdown to PDF and uploads it.
  */
 export const downloadPDF = async (req, res, next) => {
   try {
@@ -267,15 +267,24 @@ export const downloadPDF = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "No report content provided." });
     }
 
+    // 1. Generate PDF Buffer locally (fast, no Chrome)
     const pdfBuffer = await generatePremiumPDF(reportMarkdown, { companyName });
 
-    res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="${companyName.replaceAll(' ', '_')}_Strategic_Report.pdf"`,
-      'Content-Length': pdfBuffer.length
+    // 2. Upload to Cloudinary
+    const publicId = `report_${Date.now()}`;
+    const folder = "workshop_reports";
+    
+    const uploadResult = await cloudinaryUploadBuffer(pdfBuffer, publicId, folder);
+
+    // 3. Return the secure URL
+    res.status(200).json({
+      success: true,
+      data: {
+        url: uploadResult.secure_url,
+        fileName: `${companyName.replaceAll(' ', '_')}_Strategic_Report.pdf`
+      }
     });
 
-    res.status(200).send(pdfBuffer);
   } catch (error) {
     next(error);
   }

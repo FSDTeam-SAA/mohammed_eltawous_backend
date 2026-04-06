@@ -1,6 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
-// import { unlink } from "fs/promises";
+import fs from "node:fs";
 import { cloudinaryApiKey, cloudinaryCloudName, cloudinarySecret } from "../core/config/config.js";
 
 cloudinary.config({
@@ -29,4 +28,26 @@ export const cloudinaryUpload = async (filePath, public_id, folder) => {
   }
 };
 
-export default cloudinary
+export const cloudinaryUploadBuffer = (buffer, public_id, folder) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: "raw", // PDFs and generic files use "raw"
+        public_id,
+        folder,
+        access_mode: "public"
+      },
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary Stream Upload Error:", error);
+          return reject(new Error(error.message || "Cloudinary Stream Upload Error"));
+        }
+        resolve(result);
+      }
+    );
+
+    uploadStream.end(buffer);
+  });
+};
+
+export default cloudinary;
