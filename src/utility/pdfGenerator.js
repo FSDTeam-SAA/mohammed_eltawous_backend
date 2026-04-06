@@ -1,19 +1,49 @@
 import puppeteer from 'puppeteer';
 
+let browserInstance = null;
+
 /**
- * Generates a premium PDF from HTML content.
+ * Gets or initializes a singleton browser instance for PDF generation.
+ */
+const getBrowser = async () => {
+  if (browserInstance && browserInstance.connected) {
+    return browserInstance;
+  }
+
+  browserInstance = await puppeteer.launch({
+    headless: 'new',
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage', // Important for Linux/Docker
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu'
+    ]
+  });
+
+  // Re-launch if the browser disconnects
+  browserInstance.on('disconnected', () => {
+    browserInstance = null;
+  });
+
+  return browserInstance;
+};
+
+/**
+ * Generates a premium PDF from HTML content using an optimized Chromium instance.
  * @param {string} htmlContent - The HTML body content (already converted from markdown).
  * @param {Object} options - Additional options like company name.
  * @returns {Promise<Buffer>} - The generated PDF buffer.
  */
 export const generatePremiumPDF = async (htmlContent, { companyName = 'AI Workshop' } = {}) => {
-  const browser = await puppeteer.launch({
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
+  const browser = await getBrowser();
+  const page = await browser.newPage();
 
   try {
-    const page = await browser.newPage();
+    // Set higher timeout for page loading (30 seconds)
+    page.setDefaultNavigationTimeout(30000);
 
     // Prepare the full HTML with premium styling
     const fullHtml = `
@@ -109,7 +139,10 @@ export const generatePremiumPDF = async (htmlContent, { companyName = 'AI Worksh
       </html>
     `;
 
-    await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+    await page.setContent(fullHtml, { waitUntil: 'networkidle2' });
+
+    // Ensure CSS styles and complex fonts are rendered before PDF generation
+    await page.emulateMediaType('screen');
 
     const pdfBuffer = await page.pdf({
       format: 'A4',
@@ -119,11 +152,16 @@ export const generatePremiumPDF = async (htmlContent, { companyName = 'AI Worksh
         bottom: '20px',
         left: '20px',
         right: '20px'
-      }
+      },
+      timeout: 30000
     });
 
     return pdfBuffer;
+  } catch (error) {
+    console.error('PDF Generation Error:', error);
+    throw error;
   } finally {
-    await browser.close();
+    // Only close the page, keeping the browser instance alive for next requests
+    if (page) await page.close();
   }
 };
