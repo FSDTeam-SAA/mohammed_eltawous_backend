@@ -274,17 +274,38 @@ export const generateReport = async (req, res, next) => {
       `## 6. Early Warning Dashboard\n${results[6].content}`
     ].join("\n\n");
 
-    // Generate Premium PDF (Using Markdown directly for better speed/styling)
-    const pdfBuffer = await generatePremiumPDF(reportMarkdown, { companyName: company.name });
+    // Return the Cleaned Markdown Text
+    res.status(200).json({
+      success: true,
+      data: { reportMarkdown }
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * FAST PDF Export: Converts provided Markdown to PDF.
+ * This API is fast and has no AI calls.
+ */
+export const downloadPDF = async (req, res, next) => {
+  try {
+    const { reportMarkdown, companyName = "Strategic Report" } = req.body;
+
+    if (!reportMarkdown) {
+      return res.status(400).json({ success: false, message: "No report content provided." });
+    }
+
+    const pdfBuffer = await generatePremiumPDF(reportMarkdown, { companyName });
 
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="${company.name}_Strategic_Report.pdf"`,
+      'Content-Disposition': `attachment; filename="${companyName.replaceAll(' ', '_')}_Strategic_Report.pdf"`,
       'Content-Length': pdfBuffer.length
     });
 
     res.status(200).send(pdfBuffer);
-
   } catch (error) {
     next(error);
   }

@@ -253,6 +253,15 @@
                     style="font-style: italic; color: var(--text-muted); font-size: 1rem; margin: 0;"></p>
             </div>
 
+            <div id="reportPreviewArea" class="glass-card" style="display: none; margin-top: 3rem; background: rgba(15, 23, 42, 0.8); border: 2px solid var(--primary); color: #fff;">
+                <h2 style="border: none; padding: 0; margin-bottom: 2rem;">📄 Strategic Report Preview</h2>
+                <div id="reportText" style="white-space: pre-wrap; font-family: 'Inter', sans-serif; line-height: 1.8; max-height: 500px; overflow-y: auto; padding-right: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem;"></div>
+                <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                    <button style="background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border);" onclick="document.getElementById('reportPreviewArea').style.display='none'">Close Preview</button>
+                    <button id="downloadBtn" style="background: var(--excellent);" onclick="downloadPDF()">Download as PDF →</button>
+                </div>
+            </div>
+
             <div style="display: flex; justify-content: flex-end; margin-top: 3rem;">
                 <button style="background: #10b981;" id="reportBtn" onclick="generateExecutiveReport()">Generate Executive Report →</button>
             </div>
@@ -261,6 +270,7 @@
 
     <script>
         let lastAnalysisResult = null;
+        let currentReportMarkdown = "";
 
         async function generateExecutiveReport() {
             if (!lastAnalysisResult) {
@@ -269,8 +279,11 @@
             }
 
             const btn = document.getElementById('reportBtn');
+            const previewArea = document.getElementById('reportPreviewArea');
+            const reportTextDiv = document.getElementById('reportText');
+            
             const originalText = btn.innerText;
-            btn.innerText = "Generating Premium PDF...";
+            btn.innerText = "Consulting AI for Report...";
             btn.disabled = true;
 
             try {
@@ -298,42 +311,79 @@
                     body: JSON.stringify({ workshopState })
                 });
 
-                if (!response.ok) throw new Error("Failed to generate report");
+                const json = await response.json();
+                if (!json.success) throw new Error(json.message || "Failed to generate report text");
 
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Strategic_Report_${Date.now()}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
+                currentReportMarkdown = json.data.reportMarkdown;
                 
-                btn.innerText = "✅ Report Downloaded";
+                // Show Preview
+                reportTextDiv.innerText = currentReportMarkdown; // "Clean" display
+                previewArea.style.display = 'block';
+                window.scrollTo({ top: previewArea.offsetTop - 50, behavior: 'smooth' });
+
+                btn.innerText = "✅ Report Generated";
                 setTimeout(() => btn.innerText = originalText, 3000);
             } catch (e) {
-                alert("Report Error: " + e.message);
+                alert("Report Generation Error: " + e.message);
                 btn.innerText = originalText;
             } finally {
                 btn.disabled = false;
             }
         }
+
+        async function downloadPDF() {
+            if (!currentReportMarkdown) return;
+            
+            const btn = document.getElementById('downloadBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Generating PDF...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/workshop/report/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        reportMarkdown: currentReportMarkdown,
+                        companyName: "AlWasl Capital"
+                    })
+                });
+
+                if (!response.ok) throw new Error("Failed to download PDF");
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Strategic_Report_AlWasl_${Date.now()}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                
+                btn.innerText = "✅ Downloaded";
+                setTimeout(() => btn.innerText = originalText, 3000);
+            } catch (e) {
+                alert("Download Error: " + e.message);
+                btn.innerText = originalText;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
         async function suggestOptions() {
             const btn = document.getElementById('suggestBtn');
             const inputs = document.querySelectorAll('.opt-input');
-            const runBtn = document.getElementById('runBtn');
             const originalText = btn.innerText;
 
             btn.innerText = "Consulting AI...";
             btn.disabled = true;
 
             try {
-                // To suggest options, we call windtunnel with EMPTY options
                 const response = await fetch('/api/v1/workshop/windtunnel', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        company: { name: "AlWasl Capital" }, // Should be dynamic from state
+                        company: { name: "AlWasl Capital" },
                         scenarios: [{ name: "Velvet Cage" }, { name: "Gilded Souk" }, { name: "Digital Majlis" }, { name: "Golden Gateway" }],
                         strategicOptions: [],
                         conversationHistory: []
@@ -397,12 +447,10 @@
             const summary = document.getElementById('movesSummary');
             const conclusion = document.getElementById('conclusionContainer');
 
-            // Reset headers (keep first col)
             header.innerHTML = '<th style="text-align: left;">Strategic Option</th>' +
                 ['The Velvet Cage', 'The Gilded Souk', 'The Digital Majlis', 'The Golden Gateway']
                     .map(s => `<th>${s}</th>`).join('');
 
-            // Render rows
             body.innerHTML = options.map((opt, optIdx) => `
                 <tr>
                     <td style="text-align: left; background: none; border: none; font-weight: 700;">${opt}</td>
@@ -415,7 +463,6 @@
                 </tr>
             `).join('');
 
-            // Render Summary
             summary.innerHTML = `
                 <div class="summary-item">
                     <h4>No-Regret Moves</h4>
@@ -431,7 +478,6 @@
                 </div>
             `;
 
-            // Render Conclusion
             document.getElementById('recommendedOpt').innerText = data.recommendedOption;
             document.getElementById('conclusionText').innerText = data.strategicConclusion;
             conclusion.style.display = 'block';

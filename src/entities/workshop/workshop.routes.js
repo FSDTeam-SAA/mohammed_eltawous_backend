@@ -8,5 +8,6 @@ router.post('/axes', workshopController.selectAxes);
 router.post('/scenarios', workshopController.buildScenarios);
 router.post('/windtunnel', workshopController.runWindTunnel);
 router.post('/report', workshopController.generateReport);
+router.post('/report/download', workshopController.downloadPDF);
 
 export default router;
