@@ -35,6 +35,34 @@ const extractJSON = (text) => {
   return text.substring(firstBrace, lastBrace + 1);
 };
 
+/**
+ * Streams text from Claude for real-time delivery.
+ */
+export const callClaudeStream = async (messages, specificPrompt, temperature = 0.5, maxTokens = 4096, modelSelection = MODELS.SONNET, sharedContext = '') => {
+  const defaultMessages = messages && messages.length > 0 ? messages : [];
+
+  const systemBlocks = [
+    { type: "text", text: systemPrompt },
+  ];
+
+  if (sharedContext) {
+    systemBlocks.push({ type: "text", text: "\n\nSHARED CONTEXT:\n" + sharedContext });
+  }
+
+  systemBlocks.push({ type: "text", text: "\n\nINSTRUCTIONS:\n" + specificPrompt });
+
+  return anthropic.messages.stream({
+    model: modelSelection,
+    max_tokens: maxTokens,
+    temperature,
+    system: systemBlocks,
+    messages: [
+      ...defaultMessages,
+      { role: 'user', content: specificPrompt }
+    ],
+  });
+};
+
 export const callClaudeJSON = async (messages, specificPrompt, temperature = 0.5, maxTokens = 4096, modelSelection = MODELS.SONNET, sharedContext = '') => {
   let rawText = '';
   try {

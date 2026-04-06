@@ -1,5 +1,5 @@
 import { generatePremiumPDF } from '../../utility/pdfGenerator.js';
-import { callClaudeJSON, MODELS } from './ai.service.js';
+import { callClaudeJSON, callClaudeStream, MODELS } from './ai.service.js';
 import { cloudinaryUploadBuffer } from '../../lib/cloudinaryUpload.js';
 
 export const classifyForces = async (req, res, next) => {
@@ -207,6 +207,9 @@ export const runWindTunnel = async (req, res, next) => {
   }
 };
 
+/**
+ * STREAMING Report Generation (No PDF/Cloudinary for now)
+ */
 export const generateReport = async (req, res, next) => {
   try {
     const { workshopState } = req.body;
@@ -215,54 +218,48 @@ export const generateReport = async (req, res, next) => {
     const specificPrompt =
       `You are a premium strategy consultant (McKinsey/Shell style).\n` +
       `TASK: Generate a COMPREHENSIVE STRATEGIC REPORT for ${company.name} based on the provided workshop state.\n\n` +
-
       `FOCAL QUESTION: ${company.focalQuestion}\n` +
       `HORIZON YEAR: ${company.horizonYear}\n\n` +
-
-      "THE REPORT STRUCTURE MUST BE:\n" +
-      "1. Executive Summary: High-level synthesis of findings and path forward (2-3 authoritative paragraphs).\n" +
-      "2. The Focal Question: Why this question matters for the company's 2030 future.\n" +
-      "3. Key Uncertainties: Explain the 2 scenario axes selected and their polar outcomes.\n" +
-      "4. The 4 Future Scenarios: A vivid, concise synthesis of each world (topRight, topLeft, bottomLeft, bottomRight).\n" +
-      "5. Strategy Stress-Test (Wind Tunnel): Analysis of how options performed across scenarios.\n" +
-      "6. Robust Strategic Recommendations: Clear, actionable path based on no-regret moves.\n" +
-      "7. Early Warning Dashboard: Critical signposts to monitor.\n\n" +
-
-      "FORMATTING INSTRUCTIONS:\n" +
-      "- Use professional, authoritative, and inspiring language.\n" +
-      "- Output the entire report as a single CLEAN MARKDOWN string.\n" +
-      "- Start with ## for section headers (no top-level #).\n" +
-      "- Use bolding for emphasis (**text**).\n" +
-      "- Use lists for actions or signposts.\n" +
-      "- Ensure the transition between sections is seamless.\n\n" +
-
-      "Return JSON exactly matching this format: { \"reportMarkdown\": \"string (the full Markdown)\" }";
+      `OUTPUT ONLY THE MARKDOWN CONTENT. NO JSON, NO PREAMBLE. USE ## FOR HEADERS.\n\n` +
+      "1. Executive Summary\n2. Focal Question\n3. Key Uncertainties\n4. Scenarios\n5. Stress-Test Analysis\n6. Recommendations\n7. Signposts";
 
     const sharedContext = "Full Workshop State to base the report on: " + JSON.stringify(workshopState);
 
-    // One single call for the entire report (Fast, no AI timeouts)
-    const result = await callClaudeJSON([], specificPrompt, 0.5, 4000, MODELS.SONNET, sharedContext);
+    // Set headers for streaming
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
 
-    const reportMarkdown = result.reportMarkdown;
+    const stream = await callClaudeStream([], specificPrompt, 0.5, 4000, MODELS.SONNET, sharedContext);
 
-    // 1. Generate PDF Buffer locally (fast, no Chrome)
-    const pdfBuffer = await generatePremiumPDF(reportMarkdown, { companyName: company.name || "Strategic_Report" });
-
-    // 2. Upload to Cloudinary
-    const publicId = `report_${Date.now()}`;
-    const folder = "workshop_reports";
-    const uploadResult = await cloudinaryUploadBuffer(pdfBuffer, publicId, folder);
-
-    // Return ONLY the PDF URL (Fast, prevents 'Big Response' issues)
-    res.status(200).json({
-      success: true,
-      data: {
-        pdfUrl: uploadResult.secure_url
+    let fullText = "";
+    for await (const chunk of stream) {
+      if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+        const text = chunk.delta.text;
+        fullText += text;
+        res.write(text);
       }
-    });
+    }
+
+    // Send the final JSON data for logic (HIDDEN FROM UI)
+    const finalData = {
+      success: true,
+      reportMarkdown: fullText.trim(),
+      generatedAt: new Date().toISOString()
+    };
+    
+    // Using a more distinct marker to prevent UI leaks
+    res.write("\n\n###JSON_DATA###" + JSON.stringify(finalData));
+    res.end();
 
   } catch (error) {
-    next(error);
+    if (!res.headersSent) {
+      next(error);
+    } else {
+      console.error("Streaming Error:", error);
+      res.end();
+    }
   }
 };
 
