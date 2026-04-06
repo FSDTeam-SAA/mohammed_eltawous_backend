@@ -242,7 +242,7 @@ export const generateReport = async (req, res, next) => {
 
     // One single call for the entire report (Fast, no AI timeouts)
     const result = await callClaudeJSON([], specificPrompt, 0.5, 4000, MODELS.SONNET, sharedContext);
-    
+
     const reportMarkdown = result.reportMarkdown;
 
     // 1. Generate PDF Buffer locally (fast, no Chrome)
@@ -253,11 +253,10 @@ export const generateReport = async (req, res, next) => {
     const folder = "workshop_reports";
     const uploadResult = await cloudinaryUploadBuffer(pdfBuffer, publicId, folder);
 
-    // Return the Cleaned Markdown Text AND the PDF URL
+    // Return ONLY the PDF URL (Fast, prevents 'Big Response' issues)
     res.status(200).json({
       success: true,
-      data: { 
-        reportMarkdown,
+      data: {
         pdfUrl: uploadResult.secure_url
       }
     });
@@ -284,7 +283,7 @@ export const downloadPDF = async (req, res, next) => {
     // 2. Upload to Cloudinary
     const publicId = `report_${Date.now()}`;
     const folder = "workshop_reports";
-    
+
     const uploadResult = await cloudinaryUploadBuffer(pdfBuffer, publicId, folder);
 
     // 3. Return the secure URL

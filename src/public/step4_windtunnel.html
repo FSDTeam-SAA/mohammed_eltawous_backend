@@ -253,15 +253,6 @@
                     style="font-style: italic; color: var(--text-muted); font-size: 1rem; margin: 0;"></p>
             </div>
 
-            <div id="reportPreviewArea" class="glass-card" style="display: none; margin-top: 3rem; background: rgba(15, 23, 42, 0.8); border: 2px solid var(--primary); color: #fff;">
-                <h2 style="border: none; padding: 0; margin-bottom: 2rem;">📄 Strategic Report Preview</h2>
-                <div id="reportText" style="white-space: pre-wrap; font-family: 'Inter', sans-serif; line-height: 1.8; max-height: 500px; overflow-y: auto; padding-right: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem;"></div>
-                <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-                    <button style="background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border);" onclick="document.getElementById('reportPreviewArea').style.display='none'">Close Preview</button>
-                    <button id="downloadBtn" style="background: var(--excellent);" onclick="downloadPDF()">Download as PDF →</button>
-                </div>
-            </div>
-
             <div style="display: flex; justify-content: flex-end; margin-top: 3rem;">
                 <button style="background: #10b981;" id="reportBtn" onclick="generateExecutiveReport()">Generate Executive Report →</button>
             </div>
@@ -280,11 +271,8 @@
             }
 
             const btn = document.getElementById('reportBtn');
-            const previewArea = document.getElementById('reportPreviewArea');
-            const reportTextDiv = document.getElementById('reportText');
-            
             const originalText = btn.innerText;
-            btn.innerText = "Simulating Entire Report & PDF...";
+            btn.innerText = "Generating Premium PDF Report...";
             btn.disabled = true;
 
             try {
@@ -315,15 +303,12 @@
                 const json = await response.json();
                 if (!json.success) throw new Error(json.message || "Failed to generate report");
 
-                currentReportMarkdown = json.data.reportMarkdown;
-                currentPdfUrl = json.data.pdfUrl; // Store the URL directly from the first call
+                const pdfUrl = json.data.pdfUrl;
                 
-                // Show Preview
-                reportTextDiv.innerText = currentReportMarkdown; 
-                previewArea.style.display = 'block';
-                window.scrollTo({ top: previewArea.offsetTop - 50, behavior: 'smooth' });
+                // Immediately open the hosted report in a new tab
+                window.open(pdfUrl, '_blank');
 
-                btn.innerText = "✅ Report & PDF Ready";
+                btn.innerText = "✅ Report Opened in New Tab";
                 setTimeout(() => btn.innerText = originalText, 3000);
             } catch (e) {
                 alert("Report Error: " + e.message);
@@ -331,16 +316,6 @@
             } finally {
                 btn.disabled = false;
             }
-        }
-
-        async function downloadPDF() {
-            if (!currentPdfUrl) {
-                alert("Please generate the report first.");
-                return;
-            }
-            
-            // Instantly open the ready-to-use Cloudinary link
-            window.open(currentPdfUrl, '_blank');
         }
 
         async function suggestOptions() {
