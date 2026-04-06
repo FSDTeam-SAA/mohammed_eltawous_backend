@@ -1,13 +1,22 @@
 import puppeteer from 'puppeteer';
 
 let browserInstance = null;
+const MAX_PAGES_PER_BROWSER = 50; // Refresh browser after 50 pages to prevent memory leaks
+let pageCounter = 0;
 
 /**
  * Gets or initializes a singleton browser instance for PDF generation.
  */
 const getBrowser = async () => {
   if (browserInstance && browserInstance.connected) {
-    return browserInstance;
+    // If we've hit the limit, close and restart to clear memory
+    if (pageCounter >= MAX_PAGES_PER_BROWSER) {
+      await browserInstance.close();
+      browserInstance = null;
+      pageCounter = 0;
+    } else {
+      return browserInstance;
+    }
   }
 
   browserInstance = await puppeteer.launch({
@@ -15,17 +24,19 @@ const getBrowser = async () => {
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage', // Important for Linux/Docker
+      '--disable-dev-shm-usage',
       '--disable-accelerated-2d-canvas',
       '--no-first-run',
       '--no-zygote',
-      '--disable-gpu'
+      '--disable-gpu',
+      // Optimization: limit browser memory usage
+      '--js-flags="--max-old-space-size=512"'
     ]
   });
 
-  // Re-launch if the browser disconnects
   browserInstance.on('disconnected', () => {
     browserInstance = null;
+    pageCounter = 0;
   });
 
   return browserInstance;
@@ -33,13 +44,11 @@ const getBrowser = async () => {
 
 /**
  * Generates a premium PDF from HTML content using an optimized Chromium instance.
- * @param {string} htmlContent - The HTML body content (already converted from markdown).
- * @param {Object} options - Additional options like company name.
- * @returns {Promise<Buffer>} - The generated PDF buffer.
  */
 export const generatePremiumPDF = async (htmlContent, { companyName = 'AI Workshop' } = {}) => {
   const browser = await getBrowser();
   const page = await browser.newPage();
+  pageCounter++;
 
   try {
     // Set higher timeout for page loading (30 seconds)
