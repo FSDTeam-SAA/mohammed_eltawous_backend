@@ -211,68 +211,38 @@ export const generateReport = async (req, res, next) => {
     const { workshopState } = req.body;
     const { company } = workshopState;
 
-    const sharedContext = "Full Workshop State Context: " + JSON.stringify(workshopState);
+    const specificPrompt =
+      `You are a premium strategy consultant (McKinsey/Shell style).\n` +
+      `TASK: Generate a COMPREHENSIVE STRATEGIC REPORT for ${company.name} based on the provided workshop state.\n\n` +
 
-    // Helper to call Claude with a specific prompt and model
-    const getSection = (title, prompt, model = MODELS.HAIKU) => {
-      const specificPrompt =
-        `You are a premium strategy consultant (McKinsey/Shell style).\n` +
-        `Task: Generate the "${title}" section of a scenario planning report for ${company.name}.\n\n` +
-        `Specific Instructions for this section:\n${prompt}\n\n` +
-        `Return JSON: { "content": "string (markdown format, no top-level # header)" }`;
+      `FOCAL QUESTION: ${company.focalQuestion}\n` +
+      `HORIZON YEAR: ${company.horizonYear}\n\n` +
 
-      return callClaudeJSON([], specificPrompt, 0.5, 2000, model, sharedContext);
-    };
+      "THE REPORT STRUCTURE MUST BE:\n" +
+      "1. Executive Summary: High-level synthesis of findings and path forward (2-3 authoritative paragraphs).\n" +
+      "2. The Focal Question: Why this question matters for the company's 2030 future.\n" +
+      "3. Key Uncertainties: Explain the 2 scenario axes selected and their polar outcomes.\n" +
+      "4. The 4 Future Scenarios: A vivid, concise synthesis of each world (topRight, topLeft, bottomLeft, bottomRight).\n" +
+      "5. Strategy Stress-Test (Wind Tunnel): Analysis of how options performed across scenarios.\n" +
+      "6. Robust Strategic Recommendations: Clear, actionable path based on no-regret moves.\n" +
+      "7. Early Warning Dashboard: Critical signposts to monitor.\n\n" +
 
-    const sectionPromises = [
-      // 1. Executive Summary (Sonnet)
-      getSection("Executive Summary",
-        "Summarize the key findings, the most critical uncertainties, the 4 scenarios at a high level, and the final strategic recommendations. 2-3 paragraphs. Sound authoritative.",
-        MODELS.SONNET
-      ),
-      // 2. Focal Question & Horizon (Haiku)
-      getSection("Focal Question & Horizon",
-        "State the focal question being addressed and the horizon year. Explain why this specific question is critical for the company's future.",
-        MODELS.HAIKU
-      ),
-      // 3. Key Uncertainties (Haiku)
-      getSection("The Driving Forces of Uncertainty",
-        "Summarize the 2 key axes/uncertainties selected. For each, explain the two polar outcomes (Poles) and why this uncertainty matters. Mention the predetermined elements discovered briefly.",
-        MODELS.HAIKU
-      ),
-      // 4. Future Scenarios (Sonnet)
-      getSection("The 4 Future Scenarios",
-        "Present the 4 scenarios (topRight, topLeft, bottomLeft, bottomRight). For each, give its name and a concise, vivid synthesis of the world it describes. Use the provided scenario-stories for details.",
-        MODELS.SONNET
-      ),
-      // 5. Wind Tunnel Stress-Test (Sonnet)
-      getSection("Strategy Stress-Test (Wind Tunnel)",
-        "Synthesize the results of the wind tunnel testing. Which options performed well across all scenarios? Which options were fragile? Summarize the robustness of the strategy.",
-        MODELS.SONNET
-      ),
-      // 6. Strategic Recommendations (Sonnet)
-      getSection("Robust Strategic Recommendations",
-        "Provide final, actionable recommendations based on the 'No-Regret moves' and 'Recommended Option'. Explain the logic for the chosen path.",
-        MODELS.SONNET
-      ),
-      // 7. Early Warning Dashboard (Haiku)
-      getSection("Early Warning Dashboard",
-        "List the key signposts from all scenarios that the leadership team should monitor to know which future is unfolding.",
-        MODELS.HAIKU
-      )
-    ];
+      "FORMATTING INSTRUCTIONS:\n" +
+      "- Use professional, authoritative, and inspiring language.\n" +
+      "- Output the entire report as a single CLEAN MARKDOWN string.\n" +
+      "- Start with ## for section headers (no top-level #).\n" +
+      "- Use bolding for emphasis (**text**).\n" +
+      "- Use lists for actions or signposts.\n" +
+      "- Ensure the transition between sections is seamless.\n\n" +
 
-    const results = await Promise.all(sectionPromises);
+      "Return JSON exactly matching this format: { \"reportMarkdown\": \"string (the full Markdown)\" }";
 
-    const reportMarkdown = [
-      `## Executive Summary\n${results[0].content}`,
-      `## 1. The Focal Question & Horizon\n${results[1].content}`,
-      `## 2. The Driving Forces of Uncertainty\n${results[2].content}`,
-      `## 3. Four Alternative Worlds (Scenarios)\n${results[3].content}`,
-      `## 4. Stress-Testing Our Strategy (Wind Tunnel)\n${results[4].content}`,
-      `## 5. Strategic Recommendations & Path Forward\n${results[5].content}`,
-      `## 6. Early Warning Dashboard\n${results[6].content}`
-    ].join("\n\n");
+    const sharedContext = "Full Workshop State to base the report on: " + JSON.stringify(workshopState);
+
+    // One single call for the entire report (Fast, no AI timeouts)
+    const result = await callClaudeJSON([], specificPrompt, 0.5, 4000, MODELS.SONNET, sharedContext);
+    
+    const reportMarkdown = result.reportMarkdown;
 
     // Return the Cleaned Markdown Text
     res.status(200).json({
