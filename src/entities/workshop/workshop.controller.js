@@ -245,10 +245,21 @@ export const generateReport = async (req, res, next) => {
     
     const reportMarkdown = result.reportMarkdown;
 
-    // Return the Cleaned Markdown Text
+    // 1. Generate PDF Buffer locally (fast, no Chrome)
+    const pdfBuffer = await generatePremiumPDF(reportMarkdown, { companyName: company.name || "Strategic_Report" });
+
+    // 2. Upload to Cloudinary
+    const publicId = `report_${Date.now()}`;
+    const folder = "workshop_reports";
+    const uploadResult = await cloudinaryUploadBuffer(pdfBuffer, publicId, folder);
+
+    // Return the Cleaned Markdown Text AND the PDF URL
     res.status(200).json({
       success: true,
-      data: { reportMarkdown }
+      data: { 
+        reportMarkdown,
+        pdfUrl: uploadResult.secure_url
+      }
     });
 
   } catch (error) {

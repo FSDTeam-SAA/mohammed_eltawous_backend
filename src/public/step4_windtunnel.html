@@ -271,6 +271,7 @@
     <script>
         let lastAnalysisResult = null;
         let currentReportMarkdown = "";
+        let currentPdfUrl = "";
 
         async function generateExecutiveReport() {
             if (!lastAnalysisResult) {
@@ -283,7 +284,7 @@
             const reportTextDiv = document.getElementById('reportText');
             
             const originalText = btn.innerText;
-            btn.innerText = "Consulting AI for Report...";
+            btn.innerText = "Simulating Entire Report & PDF...";
             btn.disabled = true;
 
             try {
@@ -312,19 +313,20 @@
                 });
 
                 const json = await response.json();
-                if (!json.success) throw new Error(json.message || "Failed to generate report text");
+                if (!json.success) throw new Error(json.message || "Failed to generate report");
 
                 currentReportMarkdown = json.data.reportMarkdown;
+                currentPdfUrl = json.data.pdfUrl; // Store the URL directly from the first call
                 
                 // Show Preview
-                reportTextDiv.innerText = currentReportMarkdown; // "Clean" display
+                reportTextDiv.innerText = currentReportMarkdown; 
                 previewArea.style.display = 'block';
                 window.scrollTo({ top: previewArea.offsetTop - 50, behavior: 'smooth' });
 
-                btn.innerText = "✅ Report Generated";
+                btn.innerText = "✅ Report & PDF Ready";
                 setTimeout(() => btn.innerText = originalText, 3000);
             } catch (e) {
-                alert("Report Generation Error: " + e.message);
+                alert("Report Error: " + e.message);
                 btn.innerText = originalText;
             } finally {
                 btn.disabled = false;
@@ -332,40 +334,13 @@
         }
 
         async function downloadPDF() {
-            if (!currentReportMarkdown) return;
-            
-            const btn = document.getElementById('downloadBtn');
-            const originalText = btn.innerText;
-            btn.innerText = "Generating PDF...";
-            btn.disabled = true;
-
-            try {
-                const response = await fetch('/api/v1/workshop/report/download', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        reportMarkdown: currentReportMarkdown,
-                        companyName: "AlWasl Capital"
-                    })
-                });
-
-                const json = await response.json();
-                if (!json.success) throw new Error(json.message || "Failed to download PDF");
-
-                // Instead of a blob, we now have a public URL
-                const url = json.data.url;
-                
-                // Open in new tab or trigger download
-                window.open(url, '_blank');
-                
-                btn.innerText = "✅ Opened in New Tab";
-                setTimeout(() => btn.innerText = originalText, 3000);
-            } catch (e) {
-                alert("Download Error: " + e.message);
-                btn.innerText = originalText;
-            } finally {
-                btn.disabled = false;
+            if (!currentPdfUrl) {
+                alert("Please generate the report first.");
+                return;
             }
+            
+            // Instantly open the ready-to-use Cloudinary link
+            window.open(currentPdfUrl, '_blank');
         }
 
         async function suggestOptions() {
