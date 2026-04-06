@@ -39,7 +39,7 @@ export const callClaudeJSON = async (messages, specificPrompt, temperature = 0.5
   let rawText = '';
   try {
     const defaultMessages = messages && messages.length > 0 ? messages : [];
-    
+
     // Construct system blocks for optimal caching
     const systemBlocks = [
       {
@@ -73,7 +73,7 @@ export const callClaudeJSON = async (messages, specificPrompt, temperature = 0.5
       ],
     }, {
       headers: {
-          "anthropic-beta": "prompt-caching-2024-07-31"
+        "anthropic-beta": "prompt-caching-2024-07-31"
       }
     });
 
