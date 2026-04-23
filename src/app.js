@@ -30,7 +30,8 @@ const allowedOrigins = [
   'http://localhost:5000',
   'https://mohamedeltawous-website.vercel.app',
   'http://secondsight.tech',
-  'https://secondsight.tech'
+  'https://secondsight.tech',
+  'https://www.secondsight.tech'
 ];
 
 const corsOptions = {
